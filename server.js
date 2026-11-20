@@ -5,7 +5,7 @@ const path = require('path');
 const app = express();
 const port = process.env.PORT || 3000;
 
-const uri = "mongodb+srv://24307040_db_user:marritosanchez2004@utfv-cluster.y39fddz.mongodb.net/";
+const uri = "mongodb+srv://24307040_db_user:tImsfXUDgiJ3Cw7E@utfv-cluster.y39fddz.mongodb.net/";
 const client = new MongoClient(uri);
 
 let db, aspirantesCol, estudiantesCol;
@@ -119,14 +119,15 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Login administrativo
 app.post('/api/login-admin', (req, res) => {
-  const { usuario, password } = req.body;
+  const usuario = String(req.body.usuario || "").trim();
+  const password = String(req.body.password || "");
   if (usuario === "admin" && password === "utfv2026") {
-    return res.json({ success: true, rol: "admin", usuario: "Administrador UTFV" });
+    return res.json({ success: true, rol: "admin", usuario: "Control Escolar" });
   }
   return res.status(401).json({ success: false, error: "Usuario o contraseña incorrectos" });
 });
 
-// Login alumno por matrícula y correo (robusto con strings o números en DB)
+// Login alumno por matrícula y correo
 app.post('/api/login-alumno', async (req, res) => {
   try {
     const matriculaBuscada = String(req.body.matricula || "").trim();
@@ -196,7 +197,7 @@ app.post('/api/aspirantes', async (req, res) => {
   }
 });
 
-// Convertir aspirante a estudiante Y ELIMINARLO de aspirantes
+// Convertir aspirante a estudiante y eliminarlo de aspirantes
 app.post('/api/convertir/:id', async (req, res) => {
   try {
     const id = req.params.id;
