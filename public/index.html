@@ -25,13 +25,21 @@
         }
         .card-utfv {
             border: 1px solid #e6ddd0;
-            border-radius: 12px;
+            border-radius: 14px;
         }
         .card-header-utfv {
             background: linear-gradient(90deg, var(--utfv-guinda) 0%, var(--utfv-vino) 100%);
             color: #ffffff;
             font-weight: 600;
             border-bottom: 2px solid var(--utfv-dorado);
+            border-radius: 13px 13px 0 0 !important;
+        }
+        .card-header-dorado {
+            background: linear-gradient(90deg, #a97b3b 0%, var(--utfv-dorado) 100%);
+            color: #ffffff;
+            font-weight: 600;
+            border-bottom: 2px solid var(--utfv-guinda);
+            border-radius: 13px 13px 0 0 !important;
         }
         .btn-utfv {
             background-color: var(--utfv-vino);
@@ -60,7 +68,7 @@
             font-weight: 600;
         }
         .logo-utfv {
-            max-height: 82px;
+            max-height: 85px;
             width: auto;
             object-fit: contain;
         }
@@ -74,12 +82,6 @@
         .kpi-card {
             border-left: 4px solid var(--utfv-dorado);
             border-radius: 10px;
-        }
-        .ventana-acceso {
-            max-width: 480px;
-            width: 100%;
-            border-radius: 16px;
-            border: 1px solid #e3d8c6;
         }
         @media (max-width: 576px) {
             .navbar-brand { font-size: 0.9rem; }
@@ -98,69 +100,70 @@
             </span>
             <div class="d-flex align-items-center gap-2 flex-wrap" id="barraAccionesNav" style="display: none !important;">
                 <span class="text-white small d-none d-md-inline" id="etiquetaUsuario"></span>
-                <button class="btn btn-dorado btn-sm fw-bold" id="btnCopiarEnlace" onclick="copiarEnlaceAlumno()">🔗 Copiar Enlace Alumno</button>
-                <button class="btn btn-light btn-sm fw-bold text-dark" onclick="cerrarSesion()">Salir</button>
+                <button class="btn btn-dorado btn-sm fw-bold" id="btnCopiarEnlace" onclick="copiarEnlaceAlumno()">🔗 Copiar Enlace Portal</button>
+                <button class="btn btn-light btn-sm fw-bold text-dark" onclick="cerrarSesion()">Cerrar Sesión</button>
             </div>
         </div>
     </nav>
 
-    <!-- VENTANA 1: ACCESO ALUMNO (PORTAL ESTUDIANTIL) -->
-    <div id="ventanaLoginAlumno" class="container min-vh-100 d-flex flex-column align-items-center justify-content-center py-4">
-        <div class="card shadow ventana-acceso bg-white">
-            <div class="text-center pt-4 px-4">
-                <img src="/logo-utfv.jpg" alt="Universidad Tecnológica Fidel Velázquez" class="logo-utfv mb-2" onerror="this.style.display='none'">
-                <h5 class="fw-bold mb-0" style="color: var(--utfv-guinda);">UNIVERSIDAD TECNOLÓGICA FIDEL VELÁZQUEZ</h5>
-                <small class="text-muted">Ventana de Acceso para Alumnos</small>
-            </div>
-            <div class="card-body p-4">
-                <form onsubmit="iniciarSesionAlumno(event)" autocomplete="off">
-                    <div class="mb-3">
-                        <label class="form-label fw-bold small">Matrícula</label>
-                        <input type="text" id="loginMatricula" class="form-control" placeholder="Ingresa tu matrícula" autocomplete="off" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-bold small">Correo Institucional</label>
-                        <input type="email" id="loginCorreo" class="form-control" placeholder="ejemplo@utfv.edu.mx" autocomplete="off" required>
-                    </div>
-                    <div id="errorLoginAlumno" class="alert alert-danger py-2 small d-none"></div>
-                    <button type="submit" class="btn btn-dorado w-100 fw-bold">Ver Calificaciones y Boleta</button>
-                </form>
-            </div>
+    <!-- PANTALLA INICIAL CON DOS TARJETAS SEPARADAS (ALUMNO Y ADMINISTRADOR CONFIDENCIAL) -->
+    <div id="vistaAccesos" class="container py-5">
+        <!-- Encabezado Institucional -->
+        <div class="text-center mb-4">
+            <img src="/logo-utfv.jpg" alt="Universidad Tecnológica Fidel Velázquez" class="logo-utfv mb-2" onerror="this.style.display='none'">
+            <h4 class="fw-bold mb-1" style="color: var(--utfv-guinda);">UNIVERSIDAD TECNOLÓGICA FIDEL VELÁZQUEZ</h4>
+            <p class="text-muted mb-0">Sistema Integral de Gestión Académica y Consulta de Boletas</p>
         </div>
-        <div class="mt-3">
-            <button type="button" class="btn btn-link text-muted small text-decoration-none" onclick="abrirVentanaAdmin()">
-                Acceso Administrativo
-            </button>
-        </div>
-    </div>
 
-    <!-- VENTANA 2: ACCESO ADMINISTRATIVO (CONFIDENCIAL) -->
-    <div id="ventanaLoginAdmin" class="container min-vh-100 d-flex flex-column align-items-center justify-content-center py-4 d-none">
-        <div class="card shadow ventana-acceso bg-white">
-            <div class="text-center pt-4 px-4">
-                <img src="/logo-utfv.jpg" alt="Universidad Tecnológica Fidel Velázquez" class="logo-utfv mb-2" onerror="this.style.display='none'">
-                <h5 class="fw-bold mb-0" style="color: var(--utfv-guinda);">CONTROL ESCOLAR UTFV</h5>
-                <small class="text-muted">Ventana de Acceso Administrativo</small>
-            </div>
-            <div class="card-body p-4">
-                <form onsubmit="iniciarSesionAdmin(event)" autocomplete="off">
-                    <div class="mb-3">
-                        <label class="form-label fw-bold small">Usuario</label>
-                        <input type="text" id="loginUsuario" class="form-control" autocomplete="off" required>
+        <!-- Dos tarjetas independientes -->
+        <div class="row g-4 justify-content-center align-items-stretch">
+            <!-- TARJETA 1: PORTAL DEL ALUMNO -->
+            <div class="col-12 col-md-6 col-lg-5">
+                <div class="card card-utfv shadow h-100 bg-white">
+                    <div class="card-header card-header-dorado py-3 text-center">
+                        <h5 class="mb-0">🎓 Portal del Alumno</h5>
+                        <small class="opacity-75">Consulta de calificaciones y boleta oficial</small>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-bold small">Contraseña</label>
-                        <input type="password" id="loginPassword" class="form-control" autocomplete="new-password" required>
+                    <div class="card-body p-4 d-flex flex-column justify-content-between">
+                        <form onsubmit="iniciarSesionAlumno(event)" autocomplete="off">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold small">Matrícula</label>
+                                <input type="text" id="loginMatricula" class="form-control" placeholder="Ingresa tu matrícula" autocomplete="off" required>
+                            </div>
+                            <div class="mb-4">
+                                <label class="form-label fw-bold small">Correo Institucional</label>
+                                <input type="email" id="loginCorreo" class="form-control" placeholder="usuario@utfv.edu.mx" autocomplete="off" required>
+                            </div>
+                            <div id="errorLoginAlumno" class="alert alert-danger py-2 small d-none"></div>
+                            <button type="submit" class="btn btn-dorado w-100 fw-bold py-2">Consultar Calificaciones</button>
+                        </form>
                     </div>
-                    <div id="errorLoginAdmin" class="alert alert-danger py-2 small d-none"></div>
-                    <button type="submit" class="btn btn-utfv w-100 fw-bold">Ingresar al Sistema</button>
-                </form>
+                </div>
             </div>
-        </div>
-        <div class="mt-3">
-            <button type="button" class="btn btn-link text-muted small text-decoration-none" onclick="abrirVentanaAlumno()">
-                ← Volver a Ventana de Alumnos
-            </button>
+
+            <!-- TARJETA 2: CONTROL ESCOLAR / ADMINISTRADOR (CONFIDENCIAL) -->
+            <div class="col-12 col-md-6 col-lg-5">
+                <div class="card card-utfv shadow h-100 bg-white">
+                    <div class="card-header card-header-utfv py-3 text-center">
+                        <h5 class="mb-0">🔐 Control Escolar</h5>
+                        <small class="opacity-75">Acceso administrativo restringido</small>
+                    </div>
+                    <div class="card-body p-4 d-flex flex-column justify-content-between">
+                        <form onsubmit="iniciarSesionAdmin(event)" autocomplete="off">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold small">Usuario</label>
+                                <input type="text" id="loginUsuario" class="form-control" placeholder="Ingresa tu usuario" autocomplete="off" required>
+                            </div>
+                            <div class="mb-4">
+                                <label class="form-label fw-bold small">Contraseña</label>
+                                <input type="password" id="loginPassword" class="form-control" placeholder="••••••••" autocomplete="new-password" required>
+                            </div>
+                            <div id="errorLoginAdmin" class="alert alert-danger py-2 small d-none"></div>
+                            <button type="submit" class="btn btn-utfv w-100 fw-bold py-2">Ingresar al Panel</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -405,32 +408,7 @@
 
         document.addEventListener("DOMContentLoaded", () => {
             actualizarFiltroGrupos();
-            if (window.location.hash === "#admin") {
-                abrirVentanaAdmin();
-            } else {
-                abrirVentanaAlumno();
-            }
         });
-
-        function abrirVentanaAlumno() {
-            window.location.hash = "#alumno";
-            document.getElementById('ventanaLoginAdmin').classList.add('d-none');
-            document.getElementById('vistaAdmin').classList.add('d-none');
-            document.getElementById('vistaAlumno').classList.add('d-none');
-            document.getElementById('ventanaLoginAlumno').classList.remove('d-none');
-            document.getElementById('errorLoginAlumno').classList.add('d-none');
-        }
-
-        function abrirVentanaAdmin() {
-            window.location.hash = "#admin";
-            document.getElementById('ventanaLoginAlumno').classList.add('d-none');
-            document.getElementById('vistaAdmin').classList.add('d-none');
-            document.getElementById('vistaAlumno').classList.add('d-none');
-            document.getElementById('ventanaLoginAdmin').classList.remove('d-none');
-            document.getElementById('loginUsuario').value = "";
-            document.getElementById('loginPassword').value = "";
-            document.getElementById('errorLoginAdmin').classList.add('d-none');
-        }
 
         function badgePromedio(prom) {
             const val = parseFloat(prom || 0);
@@ -452,23 +430,24 @@
         }
 
         function cerrarSesion() {
-            const eraAdmin = !document.getElementById('vistaAdmin').classList.contains('d-none');
             alumnoActualSesion = null;
             alumnoSeleccionadoId = null;
             ocultarBarraNav();
             document.getElementById('vistaAdmin').classList.add('d-none');
             document.getElementById('vistaAlumno').classList.add('d-none');
-            if (eraAdmin) {
-                abrirVentanaAdmin();
-            } else {
-                abrirVentanaAlumno();
-            }
+            document.getElementById('vistaAccesos').classList.remove('d-none');
+            document.getElementById('loginUsuario').value = "";
+            document.getElementById('loginPassword').value = "";
+            document.getElementById('loginMatricula').value = "";
+            document.getElementById('loginCorreo').value = "";
+            document.getElementById('errorLoginAdmin').classList.add('d-none');
+            document.getElementById('errorLoginAlumno').classList.add('d-none');
         }
 
         function copiarEnlaceAlumno() {
-            const urlAlumno = `${window.location.origin}/#alumno`;
-            navigator.clipboard?.writeText(urlAlumno).catch(() => {});
-            alert(`Enlace del Portal de Alumnos:\n${urlAlumno}`);
+            const urlPortal = window.location.origin;
+            navigator.clipboard?.writeText(urlPortal).catch(() => {});
+            alert(`Enlace del Portal Escolar UTFV:\n${urlPortal}`);
         }
 
         async function iniciarSesionAdmin(e) {
@@ -493,8 +472,7 @@
 
                 document.getElementById('loginUsuario').value = "";
                 document.getElementById('loginPassword').value = "";
-                document.getElementById('ventanaLoginAdmin').classList.add('d-none');
-                document.getElementById('ventanaLoginAlumno').classList.add('d-none');
+                document.getElementById('vistaAccesos').classList.add('d-none');
                 document.getElementById('vistaAlumno').classList.add('d-none');
                 document.getElementById('vistaAdmin').classList.remove('d-none');
                 mostrarBarraNav("Sesión: Control Escolar", true);
@@ -527,8 +505,7 @@
                 }
 
                 alumnoActualSesion = data.alumno;
-                document.getElementById('ventanaLoginAlumno').classList.add('d-none');
-                document.getElementById('ventanaLoginAdmin').classList.add('d-none');
+                document.getElementById('vistaAccesos').classList.add('d-none');
                 document.getElementById('vistaAdmin').classList.add('d-none');
                 document.getElementById('vistaAlumno').classList.remove('d-none');
                 mostrarBarraNav(`Alumno: ${data.alumno.matricula}`, false);
@@ -712,4 +689,24 @@
 
         function filtrarEstudiantes() {
             const textoBuscador = document.getElementById('inputBuscador').value.toLowerCase();
-            const carrera
+            const carreraFiltro = document.getElementById('filtroCarrera').value;
+            const grupoFiltro = document.getElementById('filtroGrupo').value;
+            const tbody = document.getElementById('tablaEstudiantes');
+            tbody.innerHTML = '';
+
+            const filtrados = listaEstudiantesGlobal.filter(est => {
+                const coincideTexto = est.matricula.toLowerCase().includes(textoBuscador) ||
+                    (est.nombre + " " + est.apellidos).toLowerCase().includes(textoBuscador);
+                const coincideCarrera = (carreraFiltro === "TODAS" || est.carrera === carreraFiltro);
+                const coincideGrupo = (grupoFiltro === "TODOS" || String(est.grupo) === String(grupoFiltro));
+                return coincideTexto && coincideCarrera && coincideGrupo;
+            });
+
+            if (!filtrados.length) {
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted">No se encontraron estudiantes con esos criterios.</td></tr>`;
+                return;
+            }
+
+            filtrados.forEach(est => {
+                const idUnico = est._id || est.matricula;
+                tbody.innerHTML
