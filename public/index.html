@@ -106,16 +106,14 @@
         </div>
     </nav>
 
-    <!-- PANTALLA INICIAL CON DOS TARJETAS SEPARADAS (ALUMNO Y ADMINISTRADOR CONFIDENCIAL) -->
+    <!-- PANTALLA INICIAL CON DOS TARJETAS SEPARADAS -->
     <div id="vistaAccesos" class="container py-5">
-        <!-- Encabezado Institucional -->
         <div class="text-center mb-4">
             <img src="/logo-utfv.jpg" alt="Universidad Tecnológica Fidel Velázquez" class="logo-utfv mb-2" onerror="this.style.display='none'">
             <h4 class="fw-bold mb-1" style="color: var(--utfv-guinda);">UNIVERSIDAD TECNOLÓGICA FIDEL VELÁZQUEZ</h4>
             <p class="text-muted mb-0">Sistema Integral de Gestión Académica y Consulta de Boletas</p>
         </div>
 
-        <!-- Dos tarjetas independientes -->
         <div class="row g-4 justify-content-center align-items-stretch">
             <!-- TARJETA 1: PORTAL DEL ALUMNO -->
             <div class="col-12 col-md-6 col-lg-5">
@@ -141,7 +139,7 @@
                 </div>
             </div>
 
-            <!-- TARJETA 2: CONTROL ESCOLAR / ADMINISTRADOR (CONFIDENCIAL) -->
+            <!-- TARJETA 2: CONTROL ESCOLAR (CONFIDENCIAL) -->
             <div class="col-12 col-md-6 col-lg-5">
                 <div class="card card-utfv shadow h-100 bg-white">
                     <div class="card-header card-header-utfv py-3 text-center">
@@ -709,4 +707,230 @@
 
             filtrados.forEach(est => {
                 const idUnico = est._id || est.matricula;
-                tbody.innerHTML
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong>${est.matricula}</strong></td>
+                        <td><span class="small">${est.correo}</span></td>
+                        <td>${est.nombre} ${est.apellidos}</td>
+                        <td class="small">${est.carrera}</td>
+                        <td><span class="badge badge-utfv">${est.grupo}</span></td>
+                        <td>${badgePromedio(est.promedioGeneral)}</td>
+                        <td>
+                            <button class="btn btn-outline-dark btn-sm" onclick="verBoleta('${idUnico}')">⚙️ Gestionar</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function obtenerAlumnoSeleccionado() {
+            return listaEstudiantesGlobal.find(e => e._id === alumnoSeleccionadoId);
+        }
+
+        function verBoleta(idUnico) {
+            const est = listaEstudiantesGlobal.find(e => (e._id === idUnico || e.matricula === idUnico));
+            if (!est) return;
+
+            alumnoSeleccionadoId = est._id;
+            materiasBorradorModal = JSON.parse(JSON.stringify(est.materias || []));
+
+            const opcionesCarrera = Object.keys(CATALOGO_CARRERAS).map(c =>
+                `<option value="${c}" ${est.carrera === c ? 'selected' : ''}>${c}</option>`
+            ).join("");
+
+            const gruposDisponibles = (CATALOGO_CARRERAS[est.carrera] || CATALOGO_CARRERAS["Licenciatura en Ingeniería en Tecnologías de la Información e Innovación Digital"]).grupos;
+            const opcionesGrupo = gruposDisponibles.map(g =>
+                `<option value="${g}" ${String(est.grupo) === String(g) ? 'selected' : ''}>${g}</option>`
+            ).join("");
+
+            document.getElementById('contenidoBoleta').innerHTML = `
+                <div class="row mb-3 g-3">
+                    <div class="col-md-4">
+                        <h6 class="fw-bold mb-1" style="color: var(--utfv-guinda);">${est.nombre} ${est.apellidos}</h6>
+                        <p class="mb-0 small text-muted">Matrícula: <strong>${est.matricula}</strong></p>
+                        <p class="mb-0 small text-muted">Correo: ${est.correo}</p>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold small">Carrera:</label>
+                        <select id="selectCarreraModal" class="form-select form-select-sm" onchange="alCambiarCarreraEnModal()">
+                            ${opcionesCarrera}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold small">Grupo:</label>
+                        <select id="selectNuevoGrupoModal" class="form-select form-select-sm">
+                            ${opcionesGrupo}
+                        </select>
+                    </div>
+                </div>
+                <div class="alert py-2 small" style="background: var(--utfv-dorado-claro); border-color: var(--utfv-dorado);">
+                    Al cambiar de <strong>Carrera</strong>, se actualizan los grupos válidos y se cargan automáticamente sus materias y profesores.
+                </div>
+                <div id="contenedorTablaMateriasModal"></div>
+            `;
+
+            renderizarTablaMateriasModal();
+            new bootstrap.Modal(document.getElementById('modalBoleta')).show();
+        }
+
+        function alCambiarCarreraEnModal() {
+            const nuevaCarrera = document.getElementById('selectCarreraModal').value;
+            const cfg = CATALOGO_CARRERAS[nuevaCarrera];
+            const selectGrupo = document.getElementById('selectNuevoGrupoModal');
+
+            selectGrupo.innerHTML = cfg.grupos.map(g => `<option value="${g}">${g}</option>`).join("");
+            materiasBorradorModal = cfg.materias.map((m, idx) => ({
+                clave: `MAT-${101 + idx}`,
+                nombre: m.nombre,
+                profesor: m.profesor,
+                horario: "Lun-Vie 07:00 - 15:00",
+                p1: 0,
+                p2: 0,
+                p3: 0,
+                final: 0
+            }));
+            renderizarTablaMateriasModal();
+        }
+
+        function renderizarTablaMateriasModal() {
+            let html = `
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Clave</th>
+                                <th>Materia</th>
+                                <th>Profesor</th>
+                                <th>P1</th>
+                                <th>P2</th>
+                                <th>P3</th>
+                                <th>Final</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            materiasBorradorModal.forEach((mat, idx) => {
+                html += `
+                    <tr>
+                        <td><input type="text" class="form-control form-control-sm" id="materia-clave-${idx}" value="${mat.clave || ''}" style="width: 85px;"></td>
+                        <td><input type="text" class="form-control form-control-sm" id="materia-nombre-${idx}" value="${mat.nombre || ''}"></td>
+                        <td><input type="text" class="form-control form-control-sm" id="materia-profesor-${idx}" value="${mat.profesor || ''}"></td>
+                        <td><input type="number" step="0.1" min="0" max="10" class="form-control form-control-sm input-calif" data-index="${idx}" data-tipo="p1" value="${mat.p1 ?? 0}" oninput="recalcularFila(${idx})" style="width: 72px;"></td>
+                        <td><input type="number" step="0.1" min="0" max="10" class="form-control form-control-sm input-calif" data-index="${idx}" data-tipo="p2" value="${mat.p2 ?? 0}" oninput="recalcularFila(${idx})" style="width: 72px;"></td>
+                        <td><input type="number" step="0.1" min="0" max="10" class="form-control form-control-sm input-calif" data-index="${idx}" data-tipo="p3" value="${mat.p3 ?? 0}" oninput="recalcularFila(${idx})" style="width: 72px;"></td>
+                        <td><strong id="final-${idx}">${mat.final ?? 0}</strong></td>
+                    </tr>
+                `;
+            });
+
+            html += `</tbody></table></div>`;
+            document.getElementById('contenedorTablaMateriasModal').innerHTML = html;
+        }
+
+        function recalcularFila(idx) {
+            const p1 = parseFloat(document.querySelector(`input[data-index="${idx}"].input-calif[data-tipo="p1"]`).value) || 0;
+            const p2 = parseFloat(document.querySelector(`input[data-index="${idx}"].input-calif[data-tipo="p2"]`).value) || 0;
+            const p3 = parseFloat(document.querySelector(`input[data-index="${idx}"].input-calif[data-tipo="p3"]`).value) || 0;
+            const final = ((p1 + p2 + p3) / 3).toFixed(1);
+            document.getElementById(`final-${idx}`).innerText = final;
+        }
+
+        async function guardarTodosLosCambios() {
+            if (!alumnoSeleccionadoId) return;
+
+            const nuevoGrupo = document.getElementById('selectNuevoGrupoModal').value;
+            const nuevaCarrera = document.getElementById('selectCarreraModal').value;
+
+            const nuevasMaterias = materiasBorradorModal.map((mat, idx) => {
+                const clave = document.getElementById(`materia-clave-${idx}`).value;
+                const nombre = document.getElementById(`materia-nombre-${idx}`).value;
+                const profesor = document.getElementById(`materia-profesor-${idx}`).value;
+                const p1 = parseFloat(document.querySelector(`input[data-index="${idx}"].input-calif[data-tipo="p1"]`).value) || 0;
+                const p2 = parseFloat(document.querySelector(`input[data-index="${idx}"].input-calif[data-tipo="p2"]`).value) || 0;
+                const p3 = parseFloat(document.querySelector(`input[data-index="${idx}"].input-calif[data-tipo="p3"]`).value) || 0;
+                const final = parseFloat(((p1 + p2 + p3) / 3).toFixed(1));
+
+                return { clave, nombre, profesor, horario: mat.horario || "Lun-Vie 07:00 - 15:00", p1, p2, p3, final };
+            });
+
+            try {
+                const res = await fetch(`/api/actualizar-todo/${alumnoSeleccionadoId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ grupo: nuevoGrupo, carrera: nuevaCarrera, materias: nuevasMaterias })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    alert("¡Cambios guardados correctamente en MongoDB Atlas!");
+                    bootstrap.Modal.getInstance(document.getElementById('modalBoleta')).hide();
+                    cargarEstudiantes();
+                } else {
+                    alert("Error al guardar los cambios.");
+                }
+            } catch (e) {
+                alert("Error de conexión con el servidor.");
+            }
+        }
+
+        function descargarBoletaPdf(est) {
+            if (!est) return;
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            doc.setFillColor(156, 29, 56);
+            doc.rect(0, 0, 210, 25, 'F');
+            doc.setFillColor(196, 147, 79);
+            doc.rect(0, 25, 210, 2, 'F');
+
+            doc.setTextColor(255, 255, 255);
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(14);
+            doc.text("UNIVERSIDAD TECNOLÓGICA FIDEL VELÁZQUEZ", 105, 12, { align: "center" });
+            doc.setFontSize(10);
+            doc.text("BOLETA DE CALIFICACIONES OFICIAL", 105, 19, { align: "center" });
+
+            doc.setTextColor(0, 0, 0);
+            doc.setFontSize(10);
+            let y = 37;
+            doc.text(`Alumno: ${est.nombre} ${est.apellidos || ""}`, 14, y);
+            doc.text(`Matrícula: ${est.matricula}`, 14, y + 6);
+            doc.text(`Correo: ${est.correo}`, 14, y + 12);
+            doc.text(`Grupo: ${est.grupo}`, 135, y);
+            doc.text(`Promedio General: ${est.promedioGeneral ?? 0}`, 135, y + 6);
+            doc.text(`Carrera: ${est.carrera}`, 14, y + 18);
+
+            y = 67;
+            doc.setFillColor(248, 243, 234);
+            doc.rect(14, y, 182, 8, 'F');
+            doc.setFont("helvetica", "bold");
+            doc.text("Materia", 16, y + 6);
+            doc.text("Profesor", 105, y + 6);
+            doc.text("P1", 150, y + 6);
+            doc.text("P2", 162, y + 6);
+            doc.text("P3", 174, y + 6);
+            doc.text("Final", 185, y + 6);
+
+            doc.setFont("helvetica", "normal");
+            y += 13;
+
+            (est.materias || []).forEach(m => {
+                const matTxt = m.nombre.length > 36 ? m.nombre.substring(0, 33) + "..." : m.nombre;
+                const profTxt = (m.profesor || "").length > 22 ? m.profesor.substring(0, 19) + "..." : (m.profesor || "");
+                doc.text(matTxt, 16, y);
+                doc.text(profTxt, 105, y);
+                doc.text(String(m.p1 ?? 0), 151, y);
+                doc.text(String(m.p2 ?? 0), 163, y);
+                doc.text(String(m.p3 ?? 0), 175, y);
+                doc.setFont("helvetica", "bold");
+                doc.text(String(m.final ?? 0), 186, y);
+                doc.setFont("helvetica", "normal");
+                y += 8;
+            });
+
+            doc.save(`Boleta_Oficial_${est.matricula}.pdf`);
+        }
+    </script>
+</body>
+</html>
