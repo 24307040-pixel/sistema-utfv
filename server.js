@@ -5,7 +5,7 @@ const path = require('path');
 const app = express();
 const port = process.env.PORT || 3000;
 
-const uri = "mongodb+srv://24307040_db_user:marritosanchez2004@utfv-cluster.y39fddz.mongodb.net/";
+const uri = "mongodb+srv://24307040_db_user:tImsfXUDgiJ3Cw7E@utfv-cluster.y39fddz.mongodb.net/";
 const client = new MongoClient(uri);
 
 let db, aspirantesCol, estudiantesCol;
@@ -49,9 +49,45 @@ const CATALOGO_ACADEMICO = {
   }
 };
 
+function calcularCalificacionFinalMateria(materia) {
+  const p1 = parseFloat(materia.p1 ?? 0) || 0;
+  const p2 = parseFloat(materia.p2 ?? 0) || 0;
+  const p3 = parseFloat(materia.p3 ?? 0) || 0;
+  const tieneEgo = materia.ego !== undefined && materia.ego !== null && String(materia.ego).trim() !== "";
+  const egoNum = tieneEgo ? (parseFloat(materia.ego) || 0) : null;
+
+  const promedioOrdinario = parseFloat(((p1 + p2 + p3) / 3).toFixed(1));
+
+  // Calificación mínima aprobatoria = 6.0
+  // Si tiene EGO registrado, al concluir el EGO se carga la calificación de EGO si es mayor o si reprobó ordinario
+  let final = promedioOrdinario;
+  if (egoNum !== null && egoNum > 0) {
+    final = parseFloat(egoNum.toFixed(1));
+  } else if (materia.final !== undefined && materia.final !== null && String(materia.final).trim() !== "" && p1 === 0 && p2 === 0 && p3 === 0) {
+    final = parseFloat((parseFloat(materia.final) || 0).toFixed(1));
+  }
+
+  const aprobada = final >= 6.0;
+  const estatus = aprobada ? "Aprobada" : "Reprobada";
+
+  return {
+    clave: materia.clave || "MAT-101",
+    nombre: materia.nombre || "Materia",
+    profesor: materia.profesor || "Por asignar",
+    horario: materia.horario || "Lun-Vie 07:00 - 15:00",
+    p1,
+    p2,
+    p3,
+    ego: egoNum,
+    final,
+    aprobada,
+    estatus
+  };
+}
+
 function generarMateriasPorCarrera(carrera) {
   const config = CATALOGO_ACADEMICO[carrera] || CATALOGO_ACADEMICO["Licenciatura en Ingeniería en Tecnologías de la Información e Innovación Digital"];
-  return config.materias.map((item, idx) => ({
+  return config.materias.map((item, idx) => calcularCalificacionFinalMateria({
     clave: `MAT-${101 + idx}`,
     nombre: item.nombre,
     profesor: item.profesor,
@@ -59,6 +95,7 @@ function generarMateriasPorCarrera(carrera) {
     p1: 0,
     p2: 0,
     p3: 0,
+    ego: null,
     final: 0
   }));
 }
@@ -76,14 +113,21 @@ function normalizarEstudiante(est, index = 0) {
   const gruposCarrera = CATALOGO_ACADEMICO[carrera].grupos;
   const grupo = gruposCarrera.includes(String(est.grupo)) ? String(est.grupo) : gruposCarrera[0];
 
-  const materias = est.materias && est.materias.length > 0
+  const rawMaterias = (est.materias && est.materias.length > 0)
     ? est.materias
     : generarMateriasPorCarrera(carrera);
 
+  const materias = rawMaterias.map(m => calcularCalificacionFinalMateria(m));
+
+  const reprobadasCount = materias.filter(m => !m.aprobada).length;
+  const aprobadasCount = materias.filter(m => m.aprobada).length;
+
   let promedioGeneral = est.promedioGeneral;
-  if (promedioGeneral === undefined || promedioGeneral === null || isNaN(parseFloat(promedioGeneral))) {
+  if (materias.length > 0) {
     const suma = materias.reduce((acc, m) => acc + parseFloat(m.final || 0), 0);
-    promedioGeneral = materias.length > 0 ? (suma / materias.length).toFixed(2) : "0.00";
+    promedioGeneral = (suma / materias.length).toFixed(2);
+  } else if (promedioGeneral === undefined || promedioGeneral === null || isNaN(parseFloat(promedioGeneral))) {
+    promedioGeneral = "0.00";
   } else {
     promedioGeneral = parseFloat(promedioGeneral).toFixed(2);
   }
@@ -96,6 +140,8 @@ function normalizarEstudiante(est, index = 0) {
     grupo,
     carrera,
     materias,
+    reprobadasCount,
+    aprobadasCount,
     promedioGeneral
   };
 }
@@ -117,7 +163,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Login administrativo
 app.post('/api/login-admin', (req, res) => {
   const usuario = String(req.body.usuario || "").trim();
   const password = String(req.body.password || "");
@@ -127,7 +172,6 @@ app.post('/api/login-admin', (req, res) => {
   return res.status(401).json({ success: false, error: "Usuario o contraseña incorrectos" });
 });
 
-// Login alumno por matrícula y correo
 app.post('/api/login-alumno', async (req, res) => {
   try {
     const matriculaBuscada = String(req.body.matricula || "").trim();
@@ -158,7 +202,6 @@ app.post('/api/login-alumno', async (req, res) => {
   }
 });
 
-// Obtener aspirantes
 app.get('/api/aspirantes', async (req, res) => {
   try {
     const aspirantes = await aspirantesCol.find({}).toArray();
@@ -168,7 +211,6 @@ app.get('/api/aspirantes', async (req, res) => {
   }
 });
 
-// Agregar aspirante
 app.post('/api/aspirantes', async (req, res) => {
   try {
     const { nombre, apellidoP, apellidoM, edad, municipio, carrera } = req.body;
@@ -197,7 +239,6 @@ app.post('/api/aspirantes', async (req, res) => {
   }
 });
 
-// Convertir aspirante a estudiante y eliminarlo de aspirantes
 app.post('/api/convertir/:id', async (req, res) => {
   try {
     const id = req.params.id;
@@ -240,7 +281,6 @@ app.post('/api/convertir/:id', async (req, res) => {
   }
 });
 
-// Actualizar datos académicos
 app.post('/api/actualizar-todo/:id', async (req, res) => {
   try {
     const id = req.params.id;
@@ -253,10 +293,12 @@ app.post('/api/actualizar-todo/:id', async (req, res) => {
     const gruposValidos = CATALOGO_ACADEMICO[carreraValida].grupos;
     const grupoValido = gruposValidos.includes(String(grupo)) ? String(grupo) : gruposValidos[0];
 
-    let materiasFinales = Array.isArray(materias) ? materias : [];
-    if (recargarMateriasPorCarrera || materiasFinales.length === 0) {
-      materiasFinales = generarMateriasPorCarrera(carreraValida);
+    let materiasBase = Array.isArray(materias) ? materias : [];
+    if (recargarMateriasPorCarrera || materiasBase.length === 0) {
+      materiasBase = generarMateriasPorCarrera(carreraValida);
     }
+
+    const materiasFinales = materiasBase.map(m => calcularCalificacionFinalMateria(m));
 
     let promedioGeneral = 0.0;
     if (materiasFinales.length > 0) {
@@ -274,7 +316,6 @@ app.post('/api/actualizar-todo/:id', async (req, res) => {
   }
 });
 
-// Obtener estudiantes normalizados
 app.get('/api/estudiantes', async (req, res) => {
   try {
     const estudiantesRaw = await estudiantesCol.find({}).toArray();
