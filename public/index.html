@@ -172,7 +172,7 @@
                         <small class="opacity-75">Consulta de calificaciones y boleta oficial</small>
                     </div>
                     <div class="card-body p-4 d-flex flex-column justify-content-between">
-                        <form onsubmit="iniciarSesionAlumno(event)" autocomplete="off">
+                        <form id="formLoginAlumno" autocomplete="off">
                             <div class="mb-3">
                                 <label class="form-label fw-bold small">Matrícula</label>
                                 <input type="text" id="loginMatricula" class="form-control" placeholder="Ingresa tu matrícula" autocomplete="off" required>
@@ -182,7 +182,7 @@
                                 <input type="email" id="loginCorreo" class="form-control" placeholder="usuario@utfv.edu.mx" autocomplete="off" required>
                             </div>
                             <div id="errorLoginAlumno" class="alert alert-danger py-2 small d-none text-center"></div>
-                            <button type="submit" class="btn btn-dorado w-100 fw-bold py-2">Consultar Calificaciones</button>
+                            <button type="submit" id="btnLoginAlumno" class="btn btn-dorado w-100 fw-bold py-2">Consultar Calificaciones</button>
                         </form>
                     </div>
                 </div>
@@ -196,7 +196,7 @@
                         <small class="opacity-75">Acceso administrativo restringido</small>
                     </div>
                     <div class="card-body p-4 d-flex flex-column justify-content-between">
-                        <form onsubmit="iniciarSesionAdmin(event)" autocomplete="off">
+                        <form id="formLoginAdmin" autocomplete="off">
                             <div class="mb-3">
                                 <label class="form-label fw-bold small">Usuario</label>
                                 <input type="text" id="loginUsuario" class="form-control" placeholder="Ingresa tu usuario" autocomplete="off" required>
@@ -206,7 +206,7 @@
                                 <input type="password" id="loginPassword" class="form-control" placeholder="••••••••" autocomplete="new-password" required>
                             </div>
                             <div id="errorLoginAdmin" class="alert alert-danger py-2 small d-none text-center"></div>
-                            <button type="submit" class="btn btn-utfv w-100 fw-bold py-2">Ingresar al Panel</button>
+                            <button type="submit" id="btnLoginAdmin" class="btn btn-utfv w-100 fw-bold py-2">Ingresar al Panel</button>
                         </form>
                     </div>
                 </div>
@@ -256,8 +256,8 @@
             <div class="card-header card-header-utfv py-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <span class="mx-auto">📋 ASPIRANTES EN PROCESO</span>
                 <div class="d-flex gap-2 flex-wrap">
-                    <button class="btn btn-dorado btn-sm fw-bold" data-bs-toggle="modal" data-bs-target="#modalAgregarAspirante">➕ Agregar Aspirante</button>
-                    <button class="btn btn-light btn-sm fw-bold" id="btnActualizarAspirantes" onclick="cargarAspirantes()">🔄 Actualizar</button>
+                    <button type="button" class="btn btn-dorado btn-sm fw-bold" data-bs-toggle="modal" data-bs-target="#modalAgregarAspirante">➕ Agregar Aspirante</button>
+                    <button type="button" class="btn btn-light btn-sm fw-bold" id="btnActualizarAspirantes" onclick="cargarAspirantes()">🔄 Actualizar</button>
                 </div>
             </div>
             <div class="card-body">
@@ -290,7 +290,7 @@
         <div class="card card-utfv shadow-sm">
             <div class="card-header card-header-utfv py-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <span class="mx-auto">📚 ESTUDIANTES INSCRITOS Y CONTROL ACADÉMICO</span>
-                <button class="btn btn-light btn-sm fw-bold" onclick="cargarEstudiantes()">🔄 Actualizar Estudiantes</button>
+                <button type="button" class="btn btn-light btn-sm fw-bold" onclick="cargarEstudiantes()">🔄 Actualizar Estudiantes</button>
             </div>
             <div class="card-body">
                 <div class="row mb-4 g-2 align-items-end">
@@ -350,7 +350,7 @@
         <div class="card card-utfv shadow-sm">
             <div class="card-header card-header-utfv py-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <span class="mx-auto">🎓 DETALLE ACADÉMICO OFICIAL</span>
-                <button class="btn btn-dorado btn-sm fw-bold" onclick="descargarBoletaPdf(alumnoActualSesion)">📥 Descargar Boleta PDF</button>
+                <button type="button" class="btn btn-dorado btn-sm fw-bold" onclick="descargarBoletaPdf(alumnoActualSesion)">📥 Descargar Boleta PDF</button>
             </div>
             <div class="card-body" id="contenidoPortalAlumno"></div>
         </div>
@@ -364,7 +364,7 @@
                     <h5 class="modal-title w-100 text-center">➕ Registrar Nuevo Aspirante</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
-                <form onsubmit="guardarNuevoAspirante(event)">
+                <form id="formAgregarAspirante">
                     <div class="modal-body">
                         <div class="mb-3">
                             <label class="form-label fw-bold small">Nombre(s)</label>
@@ -508,6 +508,13 @@
 
         document.addEventListener("DOMContentLoaded", () => {
             actualizarFiltroGrupos();
+            const formAdmin = document.getElementById("formLoginAdmin");
+            const formAlumno = document.getElementById("formLoginAlumno");
+            const formAsp = document.getElementById("formAgregarAspirante");
+
+            if (formAdmin) formAdmin.addEventListener("submit", iniciarSesionAdmin);
+            if (formAlumno) formAlumno.addEventListener("submit", iniciarSesionAlumno);
+            if (formAsp) formAsp.addEventListener("submit", guardarNuevoAspirante);
         });
 
         function clampCalifInput(inputEl, permitirVacio = false) {
@@ -530,17 +537,14 @@
             return ajustado;
         }
 
-        // Regla solicitada:
-        // Se evalúa Aprobada / Reprobada SOLO cuando los 3 parciales (P1, P2, P3) están evaluados (> 0) o tiene EGO (> 0).
-        // Mientras falte alguno de los 3 parciales por evaluar (y no tenga EGO), queda como "En evaluación" y NO marca reprobado.
         function calcularFinalVisual(p1Raw, p2Raw, p3Raw, egoRaw) {
             const n1 = Math.min(10, Math.max(0, parseFloat(p1Raw) || 0));
             const n2 = Math.min(10, Math.max(0, parseFloat(p2Raw) || 0));
             const n3 = Math.min(10, Math.max(0, parseFloat(p3Raw) || 0));
 
-            const p1Evaluado = n1 > 0;
-            const p2Evaluado = n2 > 0;
-            const p3Evaluado = n3 > 0;
+            const p1Evaluado = p1Raw !== "" && p1Raw !== null && p1Raw !== undefined && n1 > 0;
+            const p2Evaluado = p2Raw !== "" && p2Raw !== null && p2Raw !== undefined && n2 > 0;
+            const p3Evaluado = p3Raw !== "" && p3Raw !== null && p3Raw !== undefined && n3 > 0;
             const tresParcialesEvaluados = p1Evaluado && p2Evaluado && p3Evaluado;
 
             const tieneEgo = egoRaw !== "" && egoRaw !== null && egoRaw !== undefined && (parseFloat(egoRaw) || 0) > 0;
@@ -676,7 +680,68 @@
         function copiarEnlaceAlumno() {
             const urlPortal = window.location.origin;
             navigator.clipboard?.writeText(urlPortal).catch(() => {});
-            alert(`Enlace del Portal Escolar UTFV:\n${urlPortal}`); }  async function iniciarSesionAdmin(e) { e.preventDefault(); const usuario = document.getElementById('loginUsuario').value.trim(); const password = document.getElementById('loginPassword').value; const alerta = document.getElementById('errorLoginAdmin'); alerta.classList.add('d-none');  try { const res = await fetch('/api/login-admin', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ usuario, password }) }); const data = await res.json(); if (!data.success) { alerta.innerText = data.error \vert{}\vert{} "Credenciales inválidas"; alerta.classList.remove('d-none'); return; }  document.getElementById('loginUsuario').value = ""; document.getElementById('loginPassword').value = ""; document.getElementById('vistaAccesos').classList.add('d-none'); document.getElementById('vistaAlumno').classList.add('d-none'); document.getElementById('vistaAdmin').classList.remove('d-none'); mostrarBarraNav("Sesión: Control Escolar", true); cargarAspirantes(); cargarEstudiantes(); } catch (err) { alerta.innerText = "Error de conexión con el servidor"; alerta.classList.remove('d-none'); } }  async function iniciarSesionAlumno(e) { e.preventDefault(); const matricula = document.getElementById('loginMatricula').value.trim(); const correo = document.getElementById('loginCorreo').value.trim(); const alerta = document.getElementById('errorLoginAlumno'); alerta.classList.add('d-none');  try { const res = await fetch('/api/login-alumno', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ matricula, correo }) }); const data = await res.json(); if (!data.success) { alerta.innerText = data.error \vert{}\vert{} "No se pudo iniciar sesión"; alerta.classList.remove('d-none'); return; }  alumnoActualSesion = data.alumno; document.getElementById('vistaAccesos').classList.add('d-none'); document.getElementById('vistaAdmin').classList.add('d-none'); document.getElementById('vistaAlumno').classList.remove('d-none'); mostrarBarraNav(`Alumno: ${data.alumno.matricula}`, false);
+            alert(`Enlace del Portal Escolar UTFV:\n${urlPortal}`);
+        }
+
+        async function iniciarSesionAdmin(e) {
+            if (e) e.preventDefault();
+            const usuario = document.getElementById('loginUsuario').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            const alerta = document.getElementById('errorLoginAdmin');
+            alerta.classList.add('d-none');
+
+            try {
+                const res = await fetch('/api/login-admin', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ usuario, password })
+                });
+                const data = await res.json();
+                if (!res.ok || !data.success) {
+                    alerta.innerText = data.error || "Credenciales inválidas";
+                    alerta.classList.remove('d-none');
+                    return;
+                }
+
+                document.getElementById('loginUsuario').value = "";
+                document.getElementById('loginPassword').value = "";
+                document.getElementById('vistaAccesos').classList.add('d-none');
+                document.getElementById('vistaAlumno').classList.add('d-none');
+                document.getElementById('vistaAdmin').classList.remove('d-none');
+                mostrarBarraNav("Sesión: Control Escolar", true);
+                cargarAspirantes();
+                cargarEstudiantes();
+            } catch (err) {
+                alerta.innerText = "Error de conexión con el servidor";
+                alerta.classList.remove('d-none');
+            }
+        }
+
+        async function iniciarSesionAlumno(e) {
+            if (e) e.preventDefault();
+            const matricula = document.getElementById('loginMatricula').value.trim();
+            const correo = document.getElementById('loginCorreo').value.trim();
+            const alerta = document.getElementById('errorLoginAlumno');
+            alerta.classList.add('d-none');
+
+            try {
+                const res = await fetch('/api/login-alumno', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ matricula, correo })
+                });
+                const data = await res.json();
+                if (!res.ok || !data.success) {
+                    alerta.innerText = data.error || "No se pudo iniciar sesión";
+                    alerta.classList.remove('d-none');
+                    return;
+                }
+
+                alumnoActualSesion = data.alumno;
+                document.getElementById('vistaAccesos').classList.add('d-none');
+                document.getElementById('vistaAdmin').classList.add('d-none');
+                document.getElementById('vistaAlumno').classList.remove('d-none');
+                mostrarBarraNav(`Alumno: ${data.alumno.matricula}`, false);
                 renderizarPortalAlumno(data.alumno);
             } catch (err) {
                 alerta.innerText = "Error de conexión con el servidor";
@@ -708,4 +773,319 @@
                         <td>${m.p3 ?? 0}</td>
                         <td><span class="badge badge-utfv">${egoTexto}</span></td>
                         <td><strong>${calc.tieneAlgunaCaptura ? calc.final.toFixed(1) : "—"}</strong></td>
+                        <td>${badgeEstatusMateria(calc.final, calc.evaluadaCompleta, calc.tieneAlgunaCaptura)}</td>
+                    </tr>
+                `;
+            });
+
+            document.getElementById('contenidoPortalAlumno').innerHTML = `
+                <div class="row g-3 mb-4 p-3 rounded text-center text-md-start" style="background: var(--utfv-dorado-claro); border: 1px solid #e3d8c6;">
+                    <div class="col-md-6">
+                        <h5 class="mb-1 fw-bold" style="color: var(--utfv-guinda);">${est.nombre} ${est.apellidos || ""}</h5>
+                        <p class="mb-1 small"><strong>Matrícula:</strong> ${est.matricula}</p>
+                        <p class="mb-0 small"><strong>Correo:</strong> ${est.correo}</p>
+                    </div>
+                    <div class="col-md-6 text-md-end">
+                        <p class="mb-1 small"><strong>Carrera:</strong> ${est.carrera}</p>
+                        <p class="mb-1 small"><strong>Grupo:</strong> <span class="badge badge-utfv">${est.grupo}</span></p>
+                        <p class="mb-1 small"><strong>Materias Reprobadas (&lt; 6):</strong> <span class="badge ${reprobadas > 0 ? 'bg-danger' : 'bg-success'}">${reprobadas}</span></p>
+                        <p class="mb-0 small"><strong>Promedio Final:</strong> ${badgePromedio(est.promedioGeneral, algunaCaptura)}</p>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover align-middle text-center">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Clave</th>
+                                <th>Materia</th>
+                                <th>Profesor</th>
+                                <th>P1</th>
+                                <th>P2</th>
+                                <th>P3</th>
+                                <th>EGO</th>
+                                <th>Final</th>
+                                <th>Resultado</th>
+                            </tr>
+                        </thead>
+                        <tbody>${filasMaterias}</tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        async function guardarNuevoAspirante(e) {
+            if (e) e.preventDefault();
+            const payload = {
+                nombre: document.getElementById('aspNombre').value.trim(),
+                apellidoP: document.getElementById('aspApellidoP').value.trim(),
+                apellidoM: document.getElementById('aspApellidoM').value.trim(),
+                edad: document.getElementById('aspEdad').value,
+                codigoPostal: document.getElementById('aspCP').value.trim(),
+                municipio: document.getElementById('aspMunicipio').value.trim(),
+                calle: document.getElementById('aspCalle').value.trim(),
+                carrera: document.getElementById('aspCarrera').value
+            };
+
+            try {
+                const res = await fetch('/api/aspirantes', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (data.success) {
+                    alert("¡Aspirante registrado correctamente!");
+                    document.getElementById('formAgregarAspirante').reset();
+                    document.getElementById('estadoCP').innerText = "";
+                    bootstrap.Modal.getInstance(document.getElementById('modalAgregarAspirante')).hide();
+                    cargarAspirantes();
+                } else {
+                    alert("Error: " + (data.error || "No se pudo guardar el aspirante"));
+                }
+            } catch (err) {
+                alert("Error de conexión al guardar aspirante");
+            }
+        }
+
+        async function cargarAspirantes() {
+            try {
+                const res = await fetch('/api/aspirantes');
+                listaAspirantesGlobal = await res.json();
+                document.getElementById('kpiAspirantes').innerText = listaAspirantesGlobal.length;
+                renderizarAspirantes();
+            } catch (e) {
+                console.error("Error al cargar aspirantes:", e);
+            }
+        }
+
+        function renderizarAspirantes() {
+            const filtro = (document.getElementById('buscadorAspirantes')?.value || "").toLowerCase().trim();
+            const tbody = document.getElementById('tablaAspirantes');
+            tbody.innerHTML = '';
+
+            const filtrados = listaAspirantesGlobal.filter(asp => {
+                if (!filtro) return true;
+                const texto = `${asp.nombre || ''} ${asp.apellidoP || ''} ${asp.apellidoM || ''} ${asp.municipio || ''} ${asp.carrera || ''}`.toLowerCase();
+                return texto.includes(filtro);
+            });
+
+            if (!filtrados.length) {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted">No hay aspirantes pendientes por inscribir.</td></tr>`;
+                return;
+            }
+
+            filtrados.forEach(asp => {
+                const ubicacion = [
+                    asp.codigoPostal ? `CP ${asp.codigoPostal}` : "",
+                    asp.municipio || "",
+                    asp.calle ? `Calle: ${asp.calle}` : ""
+                ].filter(Boolean).join(" · ") || "N/A";
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${asp.nombre || 'N/A'}</td>
+                        <td>${asp.apellidoP || asp.apellidos || ''} ${asp.apellidoM || ''}</td>
+                        <td>${asp.edad || 'N/A'}</td>
+                        <td class="small">${ubicacion}</td>
+                        <td class="small">${asp.carrera || 'Licenciatura en Ingeniería en Tecnologías de la Información e Innovación Digital'}</td>
                         <td>
+                            <button type="button" class="btn btn-utfv btn-sm" onclick="convertirEstudiante('${asp._id}')">Inscribir</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        async function convertirEstudiante(id) {
+            try {
+                const res = await fetch(`/api/convertir/${id}`, { method: 'POST' });
+                const data = await res.json();
+                if (data.success) {
+                    alert(`¡Inscripción exitosa!\nMatrícula: ${data.matricula}\nCorreo: ${data.correo}`);
+                    await cargarAspirantes();
+                    await cargarEstudiantes();
+                } else {
+                    alert("Error: " + data.error);
+                }
+            } catch (e) {
+                alert("Error al conectar con el servidor.");
+            }
+        }
+
+        async function cargarEstudiantes() {
+            try {
+                const res = await fetch('/api/estudiantes');
+                listaEstudiantesGlobal = await res.json();
+                document.getElementById('kpiEstudiantes').innerText = listaEstudiantesGlobal.length;
+
+                const calificados = listaEstudiantesGlobal.filter(e => {
+                    return (e.materias || []).some(m => (parseFloat(m.p1 || 0) > 0) || (parseFloat(m.p2 || 0) > 0) || (parseFloat(m.p3 || 0) > 0) || (parseFloat(m.ego || 0) > 0));
+                });
+
+                if (calificados.length > 0) {
+                    const sumaProm = calificados.reduce((acc, e) => acc + parseFloat(e.promedioGeneral || 0), 0);
+                    document.getElementById('kpiPromedio').innerText = (sumaProm / calificados.length).toFixed(2);
+                } else {
+                    document.getElementById('kpiPromedio').innerText = "0.00";
+                }
+
+                filtrarEstudiantes();
+            } catch (e) {
+                console.error("Error al cargar estudiantes:", e);
+            }
+        }
+
+        function actualizarFiltroGrupos() {
+            const carreraSel = document.getElementById('filtroCarrera').value;
+            const selectGrupo = document.getElementById('filtroGrupo');
+            selectGrupo.innerHTML = `<option value="TODOS">Todos los Grupos</option>`;
+
+            if (carreraSel === "TODAS") {
+                Object.values(CATALOGO_CARRERAS).forEach(cfg => {
+                    cfg.grupos.forEach(g => {
+                        selectGrupo.innerHTML += `<option value="${g}">${g}</option>`;
+                    });
+                });
+            } else if (CATALOGO_CARRERAS[carreraSel]) {
+                CATALOGO_CARRERAS[carreraSel].grupos.forEach(g => {
+                    selectGrupo.innerHTML += `<option value="${g}">${g}</option>`;
+                });
+            }
+        }
+
+        function filtrarEstudiantes() {
+            const textoBuscador = document.getElementById('inputBuscador').value.toLowerCase();
+            const carreraFiltro = document.getElementById('filtroCarrera').value;
+            const grupoFiltro = document.getElementById('filtroGrupo').value;
+            const tbody = document.getElementById('tablaEstudiantes');
+            tbody.innerHTML = '';
+
+            const filtrados = listaEstudiantesGlobal.filter(est => {
+                const coincideTexto = String(est.matricula || "").toLowerCase().includes(textoBuscador) ||
+                    (`${est.nombre || ""} ${est.apellidos || ""}`).toLowerCase().includes(textoBuscador);
+                const coincideCarrera = (carreraFiltro === "TODAS" || est.carrera === carreraFiltro);
+                const coincideGrupo = (grupoFiltro === "TODOS" || String(est.grupo) === String(grupoFiltro));
+                return coincideTexto && coincideCarrera && coincideGrupo;
+            });
+
+            if (!filtrados.length) {
+                tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted">No se encontraron estudiantes con esos criterios.</td></tr>`;
+                return;
+            }
+
+            filtrados.forEach(est => {
+                const idUnico = String(est._id || est.matricula);
+                const algunaCaptura = (est.materias || []).some(m => (parseFloat(m.p1 || 0) > 0) || (parseFloat(m.p2 || 0) > 0) || (parseFloat(m.p3 || 0) > 0) || (parseFloat(m.ego || 0) > 0));
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong>${est.matricula}</strong></td>
+                        <td><span class="small">${est.correo}</span></td>
+                        <td>${est.nombre} ${est.apellidos}</td>
+                        <td class="small">${est.carrera}</td>
+                        <td><span class="badge badge-utfv">${est.grupo}</span></td>
+                        <td>${badgePromedio(est.promedioGeneral, algunaCaptura)}</td>
+                        <td>${badgeEstatusAlumno(est)}</td>
+                        <td>
+                            <button type="button" class="btn btn-outline-dark btn-sm" onclick="verBoleta('${idUnico}')">⚙️ Gestionar</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function obtenerAlumnoSeleccionado() {
+            return listaEstudiantesGlobal.find(e => String(e._id) === String(alumnoSeleccionadoId));
+        }
+
+        function verBoleta(idUnico) {
+            const est = listaEstudiantesGlobal.find(e => (String(e._id) === String(idUnico) || String(e.matricula) === String(idUnico)));
+            if (!est) {
+                alert("No se encontró el registro del estudiante seleccionado.");
+                return;
+            }
+
+            alumnoSeleccionadoId = String(est._id);
+            materiasBorradorModal = JSON.parse(JSON.stringify(est.materias || []));
+
+            const opcionesCarrera = Object.keys(CATALOGO_CARRERAS).map(c =>
+                `<option value="${c}" ${est.carrera === c ? 'selected' : ''}>${c}</option>`
+            ).join("");
+
+            const gruposDisponibles = (CATALOGO_CARRERAS[est.carrera] || CATALOGO_CARRERAS["Licenciatura en Ingeniería en Tecnologías de la Información e Innovación Digital"]).grupos;
+            const opcionesGrupo = gruposDisponibles.map(g =>
+                `<option value="${g}" ${String(est.grupo) === String(g) ? 'selected' : ''}>${g}</option>`
+            ).join("");
+
+            document.getElementById('contenidoBoleta').innerHTML = `
+                <div class="text-center mb-3">
+                    <h6 class="fw-bold mb-1" style="color: var(--utfv-guinda);">${est.nombre} ${est.apellidos}</h6>
+                    <small class="text-muted">Matrícula: <strong>${est.matricula}</strong> · Correo: ${est.correo}</small>
+                </div>
+                <div class="row mb-3 g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold small">Carrera:</label>
+                        <select id="selectCarreraModal" class="form-select form-select-sm" onchange="alCambiarCarreraEnModal()">
+                            ${opcionesCarrera}
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold small">Grupo:</label>
+                        <select id="selectNuevoGrupoModal" class="form-select form-select-sm">
+                            ${opcionesGrupo}
+                        </select>
+                    </div>
+                </div>
+                <div class="alert py-2 small text-center" style="background: var(--utfv-dorado-claro); border-color: var(--utfv-dorado);">
+                    Escala de <strong>0.0 a 10.0</strong> · Mínimo aprobatorio: <strong>6.0</strong>. Solo se evalúa <strong>Aprobada/Reprobada</strong> al concluir los <strong>3 parciales</strong> o ingresar <strong>EGO</strong>.
+                </div>
+                <div id="contenedorTablaMateriasModal"></div>
+            `;
+
+            renderizarTablaMateriasModal();
+            const modalEl = document.getElementById('modalBoleta');
+            const modalInst = bootstrap.Modal.getOrCreateInstance(modalEl);
+            modalInst.show();
+        }
+
+        function alCambiarCarreraEnModal() {
+            const nuevaCarrera = document.getElementById('selectCarreraModal').value;
+            const cfg = CATALOGO_CARRERAS[nuevaCarrera];
+            const selectGrupo = document.getElementById('selectNuevoGrupoModal');
+
+            selectGrupo.innerHTML = cfg.grupos.map(g => `<option value="${g}">${g}</option>`).join("");
+            materiasBorradorModal = cfg.materias.map((m, idx) => ({
+                clave: `MAT-${101 + idx}`,
+                nombre: m.nombre,
+                profesor: m.profesor,
+                horario: "Lun-Vie 07:00 - 15:00",
+                p1: 0,
+                p2: 0,
+                p3: 0,
+                ego: null,
+                final: 0
+            }));
+            renderizarTablaMateriasModal();
+        }
+
+        function renderizarTablaMateriasModal() {
+            let html = `
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered align-middle text-center">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Clave</th>
+                                <th>Materia</th>
+                                <th>Profesor</th>
+                                <th>P1 (0-10)</th>
+                                <th>P2 (0-10)</th>
+                                <th>P3 (0-10)</th>
+                                <th>EGO (0-10)</th>
+                                <th>Final</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            materiasBorradorModal.forEach((mat, idx) => {
+                const egoValor = (mat.ego !== null && mat.ego !== undefined && String(mat.ego) !== "" && Number(mat.ego
