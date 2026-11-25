@@ -59,32 +59,40 @@ function limitarCalif(valor) {
 }
 
 function evaluarMateria(materia) {
-  const p1 = limitarCalif(materia.p1) ?? 0;
-  const p2 = limitarCalif(materia.p2) ?? 0;
-  const p3 = limitarCalif(materia.p3) ?? 0;
+  const p1Raw = materia.p1;
+  const p2Raw = materia.p2;
+  const p3Raw = materia.p3;
+
+  const p1 = limitarCalif(p1Raw) ?? 0;
+  const p2 = limitarCalif(p2Raw) ?? 0;
+  const p3 = limitarCalif(p3Raw) ?? 0;
   const ego = limitarCalif(materia.ego);
 
-  const tieneParciales = (materia.p1 !== undefined && materia.p1 !== null && String(materia.p1) !== "" && p1 > 0) ||
-    (materia.p2 !== undefined && materia.p2 !== null && String(materia.p2) !== "" && p2 > 0) ||
-    (materia.p3 !== undefined && materia.p3 !== null && String(materia.p3) !== "" && p3 > 0);
+  const p1Evaluado = p1Raw !== undefined && p1Raw !== null && String(p1Raw).trim() !== "" && p1 > 0;
+  const p2Evaluado = p2Raw !== undefined && p2Raw !== null && String(p2Raw).trim() !== "" && p2 > 0;
+  const p3Evaluado = p3Raw !== undefined && p3Raw !== null && String(p3Raw).trim() !== "" && p3 > 0;
+  const tresParcialesEvaluados = p1Evaluado && p2Evaluado && p3Evaluado;
+
   const tieneEgo = ego !== null && ego > 0;
-  const tieneCalificacion = tieneParciales || tieneEgo;
+  const tieneAlgunaCaptura = p1Evaluado || p2Evaluado || p3Evaluado || tieneEgo;
+  const evaluadaCompleta = tresParcialesEvaluados || tieneEgo;
 
   const promedioOrdinario = parseFloat(((p1 + p2 + p3) / 3).toFixed(1));
-
   let final = promedioOrdinario;
   if (tieneEgo) {
     final = parseFloat(ego.toFixed(1));
-  } else if (!tieneParciales && materia.final !== undefined && materia.final !== null && String(materia.final) !== "") {
+  } else if (!tieneAlgunaCaptura && materia.final !== undefined && materia.final !== null && String(materia.final).trim() !== "") {
     final = limitarCalif(materia.final) ?? 0;
   }
 
   let estatus = "Pendiente";
   let aprobada = false;
 
-  if (tieneCalificacion || final > 0) {
+  if (evaluadaCompleta) {
     aprobada = final >= 6.0;
     estatus = aprobada ? "Aprobada" : "Reprobada";
+  } else if (tieneAlgunaCaptura) {
+    estatus = "En evaluación";
   }
 
   return {
@@ -97,7 +105,8 @@ function evaluarMateria(materia) {
     p3,
     ego,
     final,
-    tieneCalificacion: tieneCalificacion || final > 0,
+    tieneAlgunaCaptura,
+    evaluadaCompleta,
     aprobada,
     estatus
   };
@@ -137,20 +146,23 @@ function normalizarEstudiante(est, index = 0) {
 
   const materias = rawMaterias.map(m => evaluarMateria(m));
 
-  const materiasConCalif = materias.filter(m => m.tieneCalificacion);
-  const tieneAlgunaCalificacion = materiasConCalif.length > 0;
-  const reprobadasCount = materiasConCalif.filter(m => !m.aprobada).length;
-  const aprobadasCount = materiasConCalif.filter(m => m.aprobada).length;
+  const tieneAlgunaCalificacion = materias.some(m => m.tieneAlgunaCaptura);
+  const reprobadasCount = materias.filter(m => m.evaluadaCompleta && !m.aprobada).length;
+  const aprobadasCount = materias.filter(m => m.evaluadaCompleta && m.aprobada).length;
 
   let promedioGeneral = "0.00";
-  if (tieneAlgunaCalificacion) {
+  if (tieneAlgunaCalificacion && materias.length > 0) {
     const suma = materias.reduce((acc, m) => acc + parseFloat(m.final || 0), 0);
     promedioGeneral = (suma / materias.length).toFixed(2);
   }
 
   let estatusAlumno = "Pendiente";
-  if (tieneAlgunaCalificacion) {
-    estatusAlumno = reprobadasCount > 0 ? "Reprobado" : "Aprobado";
+  if (reprobadasCount > 0) {
+    estatusAlumno = "Reprobado";
+  } else if (tieneAlgunaCalificacion && materias.every(m => m.evaluadaCompleta)) {
+    estatusAlumno = "Aprobado";
+  } else if (tieneAlgunaCalificacion) {
+    estatusAlumno = "En evaluación";
   }
 
   return {
@@ -326,7 +338,7 @@ app.post('/api/actualizar-todo/:id', async (req, res) => {
     }
 
     const materiasFinales = materiasBase.map(m => evaluarMateria(m));
-    const tieneAlgunaCalificacion = materiasFinales.some(m => m.tieneCalificacion);
+    const tieneAlgunaCalificacion = materiasFinales.some(m => m.tieneAlgunaCaptura);
 
     let promedioGeneral = 0.0;
     if (tieneAlgunaCalificacion && materiasFinales.length > 0) {
