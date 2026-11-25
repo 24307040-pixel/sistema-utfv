@@ -12,34 +12,46 @@
             --utfv-vino: #9c1d38;
             --utfv-dorado: #c4934f;
             --utfv-dorado-claro: #f8f3ea;
-            --utfv-fondo: #f6f4f1;
+            --utfv-fondo: #f4f1ec;
         }
         body {
-            background-color: var(--utfv-fondo);
+            background: radial-gradient(circle at top, #fbf8f3 0%, var(--utfv-fondo) 100%);
             color: #231f20;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
         }
         .navbar-utfv {
             background: linear-gradient(90deg, var(--utfv-guinda) 0%, var(--utfv-vino) 100%);
             border-bottom: 3px solid var(--utfv-dorado);
         }
         .card-utfv {
-            border: 1px solid #e6ddd0;
-            border-radius: 14px;
+            border: 1px solid #e3d8c6;
+            border-radius: 16px;
+            overflow: hidden;
         }
         .card-header-utfv {
             background: linear-gradient(90deg, var(--utfv-guinda) 0%, var(--utfv-vino) 100%);
             color: #ffffff;
-            font-weight: 600;
+            font-weight: 700;
             border-bottom: 2px solid var(--utfv-dorado);
-            border-radius: 13px 13px 0 0 !important;
+            text-align: center;
         }
         .card-header-dorado {
-            background: linear-gradient(90deg, #a97b3b 0%, var(--utfv-dorado) 100%);
+            background: linear-gradient(90deg, #9d7134 0%, var(--utfv-dorado) 100%);
             color: #ffffff;
-            font-weight: 600;
+            font-weight: 700;
             border-bottom: 2px solid var(--utfv-guinda);
-            border-radius: 13px 13px 0 0 !important;
+            text-align: center;
+        }
+        .titulo-seccion {
+            text-align: center;
+            color: var(--utfv-guinda);
+            font-weight: 800;
+            letter-spacing: 0.4px;
+        }
+        .subtitulo-seccion {
+            text-align: center;
+            color: #6c635b;
         }
         .btn-utfv {
             background-color: var(--utfv-vino);
@@ -68,7 +80,7 @@
             font-weight: 600;
         }
         .logo-utfv {
-            max-height: 85px;
+            max-height: 90px;
             width: auto;
             object-fit: contain;
         }
@@ -80,8 +92,10 @@
             padding: 2px 6px;
         }
         .kpi-card {
-            border-left: 4px solid var(--utfv-dorado);
-            border-radius: 10px;
+            border-top: 4px solid var(--utfv-vino);
+            border-bottom: 2px solid var(--utfv-dorado);
+            border-radius: 12px;
+            text-align: center;
         }
         @media (max-width: 576px) {
             .navbar-brand { font-size: 0.9rem; }
@@ -108,17 +122,17 @@
 
     <!-- PANTALLA INICIAL CON DOS TARJETAS SEPARADAS -->
     <div id="vistaAccesos" class="container py-5">
-        <div class="text-center mb-4">
+        <div class="text-center mb-5">
             <img src="/logo-utfv.jpg" alt="Universidad Tecnológica Fidel Velázquez" class="logo-utfv mb-2" onerror="this.style.display='none'">
-            <h4 class="fw-bold mb-1" style="color: var(--utfv-guinda);">UNIVERSIDAD TECNOLÓGICA FIDEL VELÁZQUEZ</h4>
-            <p class="text-muted mb-0">Sistema Integral de Gestión Académica y Consulta de Boletas</p>
+            <h3 class="titulo-seccion mb-1">UNIVERSIDAD TECNOLÓGICA FIDEL VELÁZQUEZ</h3>
+            <p class="subtitulo-seccion mb-0">Sistema Integral de Gestión Académica y Consulta de Boletas · Mínimo aprobatorio: 6.0</p>
         </div>
 
         <div class="row g-4 justify-content-center align-items-stretch">
             <!-- TARJETA 1: PORTAL DEL ALUMNO -->
             <div class="col-12 col-md-6 col-lg-5">
                 <div class="card card-utfv shadow h-100 bg-white">
-                    <div class="card-header card-header-dorado py-3 text-center">
+                    <div class="card-header card-header-dorado py-3">
                         <h5 class="mb-0">🎓 Portal del Alumno</h5>
                         <small class="opacity-75">Consulta de calificaciones y boleta oficial</small>
                     </div>
@@ -132,7 +146,7 @@
                                 <label class="form-label fw-bold small">Correo Institucional</label>
                                 <input type="email" id="loginCorreo" class="form-control" placeholder="usuario@utfv.edu.mx" autocomplete="off" required>
                             </div>
-                            <div id="errorLoginAlumno" class="alert alert-danger py-2 small d-none"></div>
+                            <div id="errorLoginAlumno" class="alert alert-danger py-2 small d-none text-center"></div>
                             <button type="submit" class="btn btn-dorado w-100 fw-bold py-2">Consultar Calificaciones</button>
                         </form>
                     </div>
@@ -142,7 +156,7 @@
             <!-- TARJETA 2: CONTROL ESCOLAR (CONFIDENCIAL) -->
             <div class="col-12 col-md-6 col-lg-5">
                 <div class="card card-utfv shadow h-100 bg-white">
-                    <div class="card-header card-header-utfv py-3 text-center">
+                    <div class="card-header card-header-utfv py-3">
                         <h5 class="mb-0">🔐 Control Escolar</h5>
                         <small class="opacity-75">Acceso administrativo restringido</small>
                     </div>
@@ -156,7 +170,7 @@
                                 <label class="form-label fw-bold small">Contraseña</label>
                                 <input type="password" id="loginPassword" class="form-control" placeholder="••••••••" autocomplete="new-password" required>
                             </div>
-                            <div id="errorLoginAdmin" class="alert alert-danger py-2 small d-none"></div>
+                            <div id="errorLoginAdmin" class="alert alert-danger py-2 small d-none text-center"></div>
                             <button type="submit" class="btn btn-utfv w-100 fw-bold py-2">Ingresar al Panel</button>
                         </form>
                     </div>
@@ -167,6 +181,11 @@
 
     <!-- VISTA PRINCIPAL ADMINISTRADOR -->
     <div id="vistaAdmin" class="container my-4 d-none">
+        <div class="text-center mb-4">
+            <h4 class="titulo-seccion mb-1">PANEL DE CONTROL ESCOLAR</h4>
+            <p class="subtitulo-seccion small mb-0">Administración de aspirantes, grupos, calificaciones y evaluaciones EGO</p>
+        </div>
+
         <div class="row g-3 mb-4">
             <div class="col-6 col-md-3">
                 <div class="card kpi-card shadow-sm p-3 bg-white">
@@ -196,8 +215,8 @@
 
         <!-- SECCIÓN 1: ASPIRANTES -->
         <div class="card card-utfv shadow-sm mb-4">
-            <div class="card-header card-header-utfv d-flex justify-content-between align-items-center flex-wrap gap-2">
-                <span>📋 Aspirantes en Proceso</span>
+            <div class="card-header card-header-utfv py-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <span class="mx-auto">📋 ASPIRANTES EN PROCESO</span>
                 <div class="d-flex gap-2 flex-wrap">
                     <button class="btn btn-dorado btn-sm fw-bold" data-bs-toggle="modal" data-bs-target="#modalAgregarAspirante">➕ Agregar Aspirante</button>
                     <button class="btn btn-light btn-sm fw-bold" id="btnActualizarAspirantes" onclick="cargarAspirantes()">🔄 Actualizar</button>
@@ -205,7 +224,7 @@
             </div>
             <div class="card-body">
                 <div class="table-responsive">
-                    <table class="table table-hover align-middle">
+                    <table class="table table-hover align-middle text-center">
                         <thead class="table-light">
                             <tr>
                                 <th>Nombre</th>
@@ -226,8 +245,8 @@
 
         <!-- SECCIÓN 2: ESTUDIANTES INSCRITOS -->
         <div class="card card-utfv shadow-sm">
-            <div class="card-header card-header-utfv d-flex justify-content-between align-items-center flex-wrap gap-2">
-                <span>📚 Estudiantes Inscritos y Control Académico</span>
+            <div class="card-header card-header-utfv py-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <span class="mx-auto">📚 ESTUDIANTES INSCRITOS Y CONTROL ACADÉMICO</span>
                 <button class="btn btn-light btn-sm fw-bold" onclick="cargarEstudiantes()">🔄 Actualizar Estudiantes</button>
             </div>
             <div class="card-body">
@@ -254,7 +273,7 @@
                 </div>
 
                 <div class="table-responsive">
-                    <table class="table table-bordered table-striped align-middle">
+                    <table class="table table-bordered table-striped align-middle text-center">
                         <thead class="table-dark">
                             <tr>
                                 <th>Matrícula</th>
@@ -262,12 +281,13 @@
                                 <th>Nombre Completo</th>
                                 <th>Carrera</th>
                                 <th>Grupo</th>
-                                <th>Promedio</th>
+                                <th>Promedio Final</th>
+                                <th>Estatus</th>
                                 <th>Acciones</th>
                             </tr>
                         </thead>
                         <tbody id="tablaEstudiantes">
-                            <tr><td colspan="7" class="text-center text-muted">No hay estudiantes registrados aún.</td></tr>
+                            <tr><td colspan="8" class="text-center text-muted">No hay estudiantes registrados aún.</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -277,9 +297,13 @@
 
     <!-- VISTA PORTAL DEL ALUMNO -->
     <div id="vistaAlumno" class="container my-4 d-none">
+        <div class="text-center mb-3">
+            <h4 class="titulo-seccion mb-1">BOLETA DE CALIFICACIONES DEL ALUMNO</h4>
+            <p class="subtitulo-seccion small mb-0">Calificación mínima aprobatoria: 6.0 · Incluye evaluación EGO</p>
+        </div>
         <div class="card card-utfv shadow-sm">
-            <div class="card-header card-header-utfv d-flex justify-content-between align-items-center flex-wrap gap-2">
-                <span>🎓 Portal del Alumno - Calificaciones y Boleta</span>
+            <div class="card-header card-header-utfv py-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <span class="mx-auto">🎓 DETALLE ACADÉMICO OFICIAL</span>
                 <button class="btn btn-dorado btn-sm fw-bold" onclick="descargarBoletaPdf(alumnoActualSesion)">📥 Descargar Boleta PDF</button>
             </div>
             <div class="card-body" id="contenidoPortalAlumno"></div>
@@ -291,7 +315,7 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header navbar-utfv text-white">
-                    <h5 class="modal-title">➕ Registrar Nuevo Aspirante</h5>
+                    <h5 class="modal-title w-100 text-center">➕ Registrar Nuevo Aspirante</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <form onsubmit="guardarNuevoAspirante(event)">
@@ -329,7 +353,7 @@
                             </select>
                         </div>
                     </div>
-                    <div class="modal-footer">
+                    <div class="modal-footer justify-content-center">
                         <button type="submit" class="btn btn-utfv fw-bold">Guardar Aspirante</button>
                         <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
                     </div>
@@ -343,7 +367,7 @@
         <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header navbar-utfv text-white">
-                    <h5 class="modal-title">⚙️ Control Académico y Boleta - UTFV</h5>
+                    <h5 class="modal-title w-100 text-center">⚙️ Control Académico, EGO y Boleta - UTFV</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body" id="contenidoBoleta"></div>
@@ -408,11 +432,39 @@
             actualizarFiltroGrupos();
         });
 
+        function calcularFinalVisual(p1, p2, p3, egoRaw) {
+            const n1 = parseFloat(p1) || 0;
+            const n2 = parseFloat(p2) || 0;
+            const n3 = parseFloat(p3) || 0;
+            const ord = parseFloat(((n1 + n2 + n3) / 3).toFixed(1));
+            const tieneEgo = egoRaw !== "" && egoRaw !== null && egoRaw !== undefined;
+            const egoNum = tieneEgo ? (parseFloat(egoRaw) || 0) : null;
+
+            const final = (egoNum !== null && egoNum > 0)
+                ? parseFloat(egoNum.toFixed(1))
+                : ord;
+
+            return {
+                final,
+                aprobada: final >= 6.0,
+                estatus: final >= 6.0 ? "Aprobada" : "Reprobada"
+            };
+        }
+
         function badgePromedio(prom) {
             const val = parseFloat(prom || 0);
-            if (val >= 8.0) return `<span class="badge bg-success">${val.toFixed(2)}</span>`;
-            if (val >= 6.0) return `<span class="badge bg-warning text-dark">${val.toFixed(2)}</span>`;
-            return `<span class="badge bg-danger">${val.toFixed(2)}</span>`;
+            if (val >= 6.0) {
+                return `<span class="badge bg-success fs-6">${val.toFixed(2)}</span>`;
+            }
+            return `<span class="badge bg-danger fs-6">${val.toFixed(2)}</span>`;
+        }
+
+        function badgeEstatus(calif) {
+            const val = parseFloat(calif || 0);
+            if (val >= 6.0) {
+                return `<span class="badge bg-success-subtle text-success border border-success">Aprobada</span>`;
+            }
+            return `<span class="badge bg-danger-subtle text-danger border border-danger">Reprobada</span>`;
         }
 
         function mostrarBarraNav(textoUsuario, esAdmin = false) {
@@ -516,27 +568,32 @@
 
         function renderizarPortalAlumno(est) {
             let filasMaterias = "";
+            let reprobadas = 0;
+
             (est.materias || []).forEach(m => {
                 const finalNum = parseFloat(m.final ?? 0);
-                const estadoBadge = finalNum >= 6
-                    ? `<span class="badge bg-success-subtle text-success border border-success">Aprobada</span>`
-                    : `<span class="badge bg-danger-subtle text-danger border border-danger">En curso / Reprobada</span>`;
+                if (finalNum < 6.0) reprobadas++;
+                const egoTexto = (m.ego !== null && m.ego !== undefined && String(m.ego) !== "")
+                    ? Number(m.ego).toFixed(1)
+                    : "—";
+
                 filasMaterias += `
                     <tr>
                         <td>${m.clave || ""}</td>
-                        <td><strong>${m.nombre}</strong></td>
+                        <td class="text-start"><strong>${m.nombre}</strong></td>
                         <td>${m.profesor || "Por asignar"}</td>
-                        <td class="text-center">${m.p1 ?? 0}</td>
-                        <td class="text-center">${m.p2 ?? 0}</td>
-                        <td class="text-center">${m.p3 ?? 0}</td>
-                        <td class="text-center"><strong>${finalNum.toFixed(1)}</strong></td>
-                        <td class="text-center">${estadoBadge}</td>
+                        <td>${m.p1 ?? 0}</td>
+                        <td>${m.p2 ?? 0}</td>
+                        <td>${m.p3 ?? 0}</td>
+                        <td><span class="badge badge-utfv">${egoTexto}</span></td>
+                        <td><strong>${finalNum.toFixed(1)}</strong></td>
+                        <td>${badgeEstatus(finalNum)}</td>
                     </tr>
                 `;
             });
 
             document.getElementById('contenidoPortalAlumno').innerHTML = `
-                <div class="row g-3 mb-4 p-3 rounded" style="background: var(--utfv-dorado-claro);">
+                <div class="row g-3 mb-4 p-3 rounded text-center text-md-start" style="background: var(--utfv-dorado-claro); border: 1px solid #e3d8c6;">
                     <div class="col-md-6">
                         <h5 class="mb-1 fw-bold" style="color: var(--utfv-guinda);">${est.nombre} ${est.apellidos || ""}</h5>
                         <p class="mb-1 small"><strong>Matrícula:</strong> ${est.matricula}</p>
@@ -545,21 +602,23 @@
                     <div class="col-md-6 text-md-end">
                         <p class="mb-1 small"><strong>Carrera:</strong> ${est.carrera}</p>
                         <p class="mb-1 small"><strong>Grupo:</strong> <span class="badge badge-utfv">${est.grupo}</span></p>
-                        <p class="mb-0 small"><strong>Promedio General:</strong> ${badgePromedio(est.promedioGeneral)}</p>
+                        <p class="mb-1 small"><strong>Materias Reprobadas (&lt; 6):</strong> <span class="badge ${reprobadas > 0 ? 'bg-danger' : 'bg-success'}">${reprobadas}</span></p>
+                        <p class="mb-0 small"><strong>Promedio Final:</strong> ${badgePromedio(est.promedioGeneral)}</p>
                     </div>
                 </div>
                 <div class="table-responsive">
-                    <table class="table table-bordered table-hover align-middle">
+                    <table class="table table-bordered table-hover align-middle text-center">
                         <thead class="table-light">
                             <tr>
                                 <th>Clave</th>
                                 <th>Materia</th>
                                 <th>Profesor</th>
-                                <th class="text-center">P1</th>
-                                <th class="text-center">P2</th>
-                                <th class="text-center">P3</th>
-                                <th class="text-center">Final</th>
-                                <th class="text-center">Estado</th>
+                                <th>P1</th>
+                                <th>P2</th>
+                                <th>P3</th>
+                                <th>EGO</th>
+                                <th>Final</th>
+                                <th>Resultado</th>
                             </tr>
                         </thead>
                         <tbody>${filasMaterias}</tbody>
@@ -701,12 +760,18 @@
             });
 
             if (!filtrados.length) {
-                tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted">No se encontraron estudiantes con esos criterios.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted">No se encontraron estudiantes con esos criterios.</td></tr>`;
                 return;
             }
 
             filtrados.forEach(est => {
                 const idUnico = est._id || est.matricula;
+                const promNum = parseFloat(est.promedioGeneral || 0);
+                const tieneReprobadas = (est.materias || []).some(m => parseFloat(m.final || 0) < 6.0);
+                const estatusGlobal = (promNum >= 6.0 && !tieneReprobadas)
+                    ? `<span class="badge bg-success">Aprobado</span>`
+                    : `<span class="badge bg-danger">Reprobado</span>`;
+
                 tbody.innerHTML += `
                     <tr>
                         <td><strong>${est.matricula}</strong></td>
@@ -715,6 +780,7 @@
                         <td class="small">${est.carrera}</td>
                         <td><span class="badge badge-utfv">${est.grupo}</span></td>
                         <td>${badgePromedio(est.promedioGeneral)}</td>
+                        <td>${estatusGlobal}</td>
                         <td>
                             <button class="btn btn-outline-dark btn-sm" onclick="verBoleta('${idUnico}')">⚙️ Gestionar</button>
                         </td>
@@ -744,27 +810,26 @@
             ).join("");
 
             document.getElementById('contenidoBoleta').innerHTML = `
+                <div class="text-center mb-3">
+                    <h6 class="fw-bold mb-1" style="color: var(--utfv-guinda);">${est.nombre} ${est.apellidos}</h6>
+                    <small class="text-muted">Matrícula: <strong>${est.matricula}</strong> · Correo: ${est.correo}</small>
+                </div>
                 <div class="row mb-3 g-3">
-                    <div class="col-md-4">
-                        <h6 class="fw-bold mb-1" style="color: var(--utfv-guinda);">${est.nombre} ${est.apellidos}</h6>
-                        <p class="mb-0 small text-muted">Matrícula: <strong>${est.matricula}</strong></p>
-                        <p class="mb-0 small text-muted">Correo: ${est.correo}</p>
-                    </div>
-                    <div class="col-md-4">
+                    <div class="col-md-6">
                         <label class="form-label fw-bold small">Carrera:</label>
                         <select id="selectCarreraModal" class="form-select form-select-sm" onchange="alCambiarCarreraEnModal()">
                             ${opcionesCarrera}
                         </select>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-6">
                         <label class="form-label fw-bold small">Grupo:</label>
                         <select id="selectNuevoGrupoModal" class="form-select form-select-sm">
                             ${opcionesGrupo}
                         </select>
                     </div>
                 </div>
-                <div class="alert py-2 small" style="background: var(--utfv-dorado-claro); border-color: var(--utfv-dorado);">
-                    Al cambiar de <strong>Carrera</strong>, se actualizan los grupos válidos y se cargan automáticamente sus materias y profesores.
+                <div class="alert py-2 small text-center" style="background: var(--utfv-dorado-claro); border-color: var(--utfv-dorado);">
+                    Calificación mínima aprobatoria: <strong>6.0</strong>. Si ingresas calificación en <strong>EGO</strong>, se carga automáticamente como calificación <strong>Final</strong> al concluir el EGO.
                 </div>
                 <div id="contenedorTablaMateriasModal"></div>
             `;
@@ -787,6 +852,7 @@
                 p1: 0,
                 p2: 0,
                 p3: 0,
+                ego: null,
                 final: 0
             }));
             renderizarTablaMateriasModal();
@@ -795,7 +861,7 @@
         function renderizarTablaMateriasModal() {
             let html = `
                 <div class="table-responsive">
-                    <table class="table table-sm table-bordered align-middle">
+                    <table class="table table-sm table-bordered align-middle text-center">
                         <thead class="table-light">
                             <tr>
                                 <th>Clave</th>
@@ -804,22 +870,28 @@
                                 <th>P1</th>
                                 <th>P2</th>
                                 <th>P3</th>
+                                <th>EGO</th>
                                 <th>Final</th>
+                                <th>Estado</th>
                             </tr>
                         </thead>
                         <tbody>
             `;
 
             materiasBorradorModal.forEach((mat, idx) => {
+                const egoValor = (mat.ego !== null && mat.ego !== undefined && String(mat.ego) !== "") ? mat.ego : "";
+                const calc = calcularFinalVisual(mat.p1 ?? 0, mat.p2 ?? 0, mat.p3 ?? 0, egoValor);
                 html += `
                     <tr>
-                        <td><input type="text" class="form-control form-control-sm" id="materia-clave-${idx}" value="${mat.clave || ''}" style="width: 85px;"></td>
+                        <td><input type="text" class="form-control form-control-sm text-center" id="materia-clave-${idx}" value="${mat.clave || ''}" style="width: 82px;"></td>
                         <td><input type="text" class="form-control form-control-sm" id="materia-nombre-${idx}" value="${mat.nombre || ''}"></td>
                         <td><input type="text" class="form-control form-control-sm" id="materia-profesor-${idx}" value="${mat.profesor || ''}"></td>
-                        <td><input type="number" step="0.1" min="0" max="10" class="form-control form-control-sm input-calif" data-index="${idx}" data-tipo="p1" value="${mat.p1 ?? 0}" oninput="recalcularFila(${idx})" style="width: 72px;"></td>
-                        <td><input type="number" step="0.1" min="0" max="10" class="form-control form-control-sm input-calif" data-index="${idx}" data-tipo="p2" value="${mat.p2 ?? 0}" oninput="recalcularFila(${idx})" style="width: 72px;"></td>
-                        <td><input type="number" step="0.1" min="0" max="10" class="form-control form-control-sm input-calif" data-index="${idx}" data-tipo="p3" value="${mat.p3 ?? 0}" oninput="recalcularFila(${idx})" style="width: 72px;"></td>
-                        <td><strong id="final-${idx}">${mat.final ?? 0}</strong></td>
+                        <td><input type="number" step="0.1" min="0" max="10" class="form-control form-control-sm text-center input-calif" data-index="${idx}" data-tipo="p1" value="${mat.p1 ?? 0}" oninput="recalcularFila(${idx})" style="width: 68px;"></td>
+                        <td><input type="number" step="0.1" min="0" max="10" class="form-control form-control-sm text-center input-calif" data-index="${idx}" data-tipo="p2" value="${mat.p2 ?? 0}" oninput="recalcularFila(${idx})" style="width: 68px;"></td>
+                        <td><input type="number" step="0.1" min="0" max="10" class="form-control form-control-sm text-center input-calif" data-index="${idx}" data-tipo="p3" value="${mat.p3 ?? 0}" oninput="recalcularFila(${idx})" style="width: 68px;"></td>
+                        <td><input type="number" step="0.1" min="0" max="10" placeholder="EGO" class="form-control form-control-sm text-center input-ego" data-index="${idx}" value="${egoValor}" oninput="recalcularFila(${idx})" style="width: 72px;"></td>
+                        <td><strong id="final-${idx}">${calc.final.toFixed(1)}</strong></td>
+                        <td id="estado-fila-${idx}">${badgeEstatus(calc.final)}</td>
                     </tr>
                 `;
             });
@@ -832,8 +904,11 @@
             const p1 = parseFloat(document.querySelector(`input[data-index="${idx}"].input-calif[data-tipo="p1"]`).value) || 0;
             const p2 = parseFloat(document.querySelector(`input[data-index="${idx}"].input-calif[data-tipo="p2"]`).value) || 0;
             const p3 = parseFloat(document.querySelector(`input[data-index="${idx}"].input-calif[data-tipo="p3"]`).value) || 0;
-            const final = ((p1 + p2 + p3) / 3).toFixed(1);
-            document.getElementById(`final-${idx}`).innerText = final;
+            const egoRaw = document.querySelector(`input[data-index="${idx}"].input-ego`).value;
+
+            const calc = calcularFinalVisual(p1, p2, p3, egoRaw);
+            document.getElementById(`final-${idx}`).innerText = calc.final.toFixed(1);
+            document.getElementById(`estado-fila-${idx}`).innerHTML = badgeEstatus(calc.final);
         }
 
         async function guardarTodosLosCambios() {
@@ -849,9 +924,23 @@
                 const p1 = parseFloat(document.querySelector(`input[data-index="${idx}"].input-calif[data-tipo="p1"]`).value) || 0;
                 const p2 = parseFloat(document.querySelector(`input[data-index="${idx}"].input-calif[data-tipo="p2"]`).value) || 0;
                 const p3 = parseFloat(document.querySelector(`input[data-index="${idx}"].input-calif[data-tipo="p3"]`).value) || 0;
-                const final = parseFloat(((p1 + p2 + p3) / 3).toFixed(1));
+                const egoRaw = document.querySelector(`input[data-index="${idx}"].input-ego`).value;
+                const tieneEgo = egoRaw !== "" && egoRaw !== null && egoRaw !== undefined;
+                const ego = tieneEgo ? (parseFloat(egoRaw) || 0) : null;
 
-                return { clave, nombre, profesor, horario: mat.horario || "Lun-Vie 07:00 - 15:00", p1, p2, p3, final };
+                const calc = calcularFinalVisual(p1, p2, p3, egoRaw);
+
+                return {
+                    clave,
+                    nombre,
+                    profesor,
+                    horario: mat.horario || "Lun-Vie 07:00 - 15:00",
+                    p1,
+                    p2,
+                    p3,
+                    ego,
+                    final: calc.final
+                };
             });
 
             try {
@@ -889,7 +978,7 @@
             doc.setFontSize(14);
             doc.text("UNIVERSIDAD TECNOLÓGICA FIDEL VELÁZQUEZ", 105, 12, { align: "center" });
             doc.setFontSize(10);
-            doc.text("BOLETA DE CALIFICACIONES OFICIAL", 105, 19, { align: "center" });
+            doc.text("BOLETA DE CALIFICACIONES OFICIAL (MÍNIMO APROBATORIO: 6.0)", 105, 19, { align: "center" });
 
             doc.setTextColor(0, 0, 0);
             doc.setFontSize(10);
@@ -898,33 +987,44 @@
             doc.text(`Matrícula: ${est.matricula}`, 14, y + 6);
             doc.text(`Correo: ${est.correo}`, 14, y + 12);
             doc.text(`Grupo: ${est.grupo}`, 135, y);
-            doc.text(`Promedio General: ${est.promedioGeneral ?? 0}`, 135, y + 6);
+            doc.text(`Promedio Final: ${est.promedioGeneral ?? 0}`, 135, y + 6);
             doc.text(`Carrera: ${est.carrera}`, 14, y + 18);
 
             y = 67;
             doc.setFillColor(248, 243, 234);
             doc.rect(14, y, 182, 8, 'F');
             doc.setFont("helvetica", "bold");
+            doc.setFontSize(9);
             doc.text("Materia", 16, y + 6);
-            doc.text("Profesor", 105, y + 6);
-            doc.text("P1", 150, y + 6);
-            doc.text("P2", 162, y + 6);
-            doc.text("P3", 174, y + 6);
-            doc.text("Final", 185, y + 6);
+            doc.text("Profesor", 92, y + 6);
+            doc.text("P1", 132, y + 6);
+            doc.text("P2", 141, y + 6);
+            doc.text("P3", 150, y + 6);
+            doc.text("EGO", 159, y + 6);
+            doc.text("Final", 170, y + 6);
+            doc.text("Estado", 181, y + 6);
 
             doc.setFont("helvetica", "normal");
             y += 13;
 
             (est.materias || []).forEach(m => {
-                const matTxt = m.nombre.length > 36 ? m.nombre.substring(0, 33) + "..." : m.nombre;
-                const profTxt = (m.profesor || "").length > 22 ? m.profesor.substring(0, 19) + "..." : (m.profesor || "");
+                const finalNum = parseFloat(m.final ?? 0);
+                const estadoTxt = finalNum >= 6.0 ? "Aprob." : "Reprob.";
+                const egoTxt = (m.ego !== null && m.ego !== undefined && String(m.ego) !== "")
+                    ? String(m.ego)
+                    : "-";
+                const matTxt = m.nombre.length > 30 ? m.nombre.substring(0, 27) + "..." : m.nombre;
+                const profTxt = (m.profesor || "").length > 16 ? m.profesor.substring(0, 13) + "..." : (m.profesor || "");
+
                 doc.text(matTxt, 16, y);
-                doc.text(profTxt, 105, y);
-                doc.text(String(m.p1 ?? 0), 151, y);
-                doc.text(String(m.p2 ?? 0), 163, y);
-                doc.text(String(m.p3 ?? 0), 175, y);
+                doc.text(profTxt, 92, y);
+                doc.text(String(m.p1 ?? 0), 133, y);
+                doc.text(String(m.p2 ?? 0), 142, y);
+                doc.text(String(m.p3 ?? 0), 151, y);
+                doc.text(egoTxt, 160, y);
                 doc.setFont("helvetica", "bold");
-                doc.text(String(m.final ?? 0), 186, y);
+                doc.text(finalNum.toFixed(1), 170, y);
+                doc.text(estadoTxt, 181, y);
                 doc.setFont("helvetica", "normal");
                 y += 8;
             });
