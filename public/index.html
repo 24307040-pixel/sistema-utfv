@@ -57,7 +57,6 @@
             text-align: center;
             color: #6c635b;
         }
-        /* Nuevo estilo de líneas / rayas decorativas institucionales */
         .divisor-utfv {
             display: flex;
             align-items: center;
@@ -343,7 +342,7 @@
     <div id="vistaAlumno" class="container my-4 d-none">
         <div class="text-center mb-3">
             <h4 class="titulo-seccion mb-1">BOLETA DE CALIFICACIONES DEL ALUMNO</h4>
-            <p class="subtitulo-seccion small mb-0">Calificación mínima aprobatoria: 6.0 · Escala de 0.0 a 10.0 · Incluye evaluación EGO</p>
+            <p class="subtitulo-seccion small mb-0">Mínimo aprobatorio: 6.0 · Se evalúa Aprobado/Reprobado al concluir los 3 parciales o EGO</p>
             <div class="divisor-utfv">
                 <span class="divisor-rombo"></span>
             </div>
@@ -479,7 +478,6 @@
             }
         };
 
-        // Catálogo rápido de respaldo para CPs frecuentes en la zona de la UTFV y CDMX
         const CP_RESPALDO = {
             "54900": "Tultitlán",
             "54910": "Tultitlán",
@@ -513,7 +511,8 @@
         });
 
         function clampCalifInput(inputEl, permitirVacio = false) {
-            let raw = inputEl.value;
+            if (!inputEl) return permitirVacio ? "" : 0;
+            let raw = String(inputEl.value ?? "");
             if (raw === "") {
                 return permitirVacio ? "" : 0;
             }
@@ -524,7 +523,6 @@
             }
             if (num < 0) num = 0;
             if (num > 10) num = 10;
-            // Limita a máximo 1 decimal para que no escriban calificaciones fuera de formato
             const ajustado = parseFloat(num.toFixed(1));
             if (String(ajustado) !== raw && !raw.endsWith(".")) {
                 inputEl.value = ajustado;
@@ -532,45 +530,50 @@
             return ajustado;
         }
 
+        // Regla solicitada:
+        // Se evalúa Aprobada / Reprobada SOLO cuando los 3 parciales (P1, P2, P3) están evaluados (> 0) o tiene EGO (> 0).
+        // Mientras falte alguno de los 3 parciales por evaluar (y no tenga EGO), queda como "En evaluación" y NO marca reprobado.
         function calcularFinalVisual(p1Raw, p2Raw, p3Raw, egoRaw) {
             const n1 = Math.min(10, Math.max(0, parseFloat(p1Raw) || 0));
-            const n2 = Math.min(10, Math.max(0, parseFloat(p2) || 0));
-            const n3 = Math.min(10, Math.max(0, parseFloat(p3) || 0));
+            const n2 = Math.min(10, Math.max(0, parseFloat(p2Raw) || 0));
+            const n3 = Math.min(10, Math.max(0, parseFloat(p3Raw) || 0));
 
-            const tieneCalif = (String(p1Raw) !== "" && n1 > 0) ||
-                (String(p2Raw) !== "" && n2 > 0) ||
-                (String(p3Raw) !== "" && n3 > 0) ||
-                (String(egoRaw) !== "" && (parseFloat(egoRaw) || 0) > 0);
+            const p1Evaluado = n1 > 0;
+            const p2Evaluado = n2 > 0;
+            const p3Evaluado = n3 > 0;
+            const tresParcialesEvaluados = p1Evaluado && p2Evaluado && p3Evaluado;
 
-            const ord = parseFloat(((n1 + n2 + n3) / 3).toFixed(1));
-            const tieneEgo = egoRaw !== "" && egoRaw !== null && egoRaw !== undefined;
+            const tieneEgo = egoRaw !== "" && egoRaw !== null && egoRaw !== undefined && (parseFloat(egoRaw) || 0) > 0;
             const egoNum = tieneEgo ? Math.min(10, Math.max(0, parseFloat(egoRaw) || 0)) : null;
 
-            const final = (egoNum !== null && egoNum > 0)
-                ? parseFloat(egoNum.toFixed(1))
-                : ord;
+            const ord = parseFloat(((n1 + n2 + n3) / 3).toFixed(1));
+            const final = tieneEgo ? parseFloat(egoNum.toFixed(1)) : ord;
+
+            const evaluadaCompleta = tresParcialesEvaluados || tieneEgo;
+            const tieneAlgunaCaptura = p1Evaluado || p2Evaluado || p3Evaluado || tieneEgo;
 
             return {
                 final,
-                tieneCalif: tieneCalif || final > 0,
-                aprobada: final >= 6.0
+                tieneAlgunaCaptura,
+                evaluadaCompleta,
+                aprobada: evaluadaCompleta ? (final >= 6.0) : false
             };
         }
 
-        function badgePromedio(prom, tieneCalif = true) {
-            if (!tieneCalif) {
-                return `<span class="badge bg-secondary fs-6">Sin calificar</span>`;
+        function badgePromedio(prom, tieneCaptura = false) {
+            if (!tieneCaptura) {
+                return `<span class="badge bg-secondary fs-6">En evaluación</span>`;
             }
             const val = parseFloat(prom || 0);
             if (val >= 6.0) {
                 return `<span class="badge bg-success fs-6">${val.toFixed(2)}</span>`;
             }
-            return `<span class="badge bg-danger fs-6">${val.toFixed(2)}</span>`;
+            return `<span class="badge bg-warning text-dark fs-6">${val.toFixed(2)}</span>`;
         }
 
-        function badgeEstatusMateria(calif, tieneCalif = true) {
-            if (!tieneCalif) {
-                return `<span class="badge bg-secondary-subtle text-secondary border border-secondary">Pendiente</span>`;
+        function badgeEstatusMateria(calif, evaluadaCompleta = false, tieneCaptura = false) {
+            if (!evaluadaCompleta) {
+                return `<span class="badge bg-secondary-subtle text-secondary border border-secondary">${tieneCaptura ? "Parciales en curso" : "Pendiente"}</span>`;
             }
             const val = parseFloat(calif || 0);
             if (val >= 6.0) {
@@ -580,13 +583,27 @@
         }
 
         function badgeEstatusAlumno(est) {
-            if (!est.tieneAlgunaCalificacion) {
-                return `<span class="badge bg-secondary">Sin calificaciones</span>`;
+            const mats = est.materias || [];
+            const algunaCaptura = mats.some(m => (parseFloat(m.p1 || 0) > 0) || (parseFloat(m.p2 || 0) > 0) || (parseFloat(m.p3 || 0) > 0) || (parseFloat(m.ego || 0) > 0));
+            if (!algunaCaptura) {
+                return `<span class="badge bg-secondary">Sin calificar</span>`;
             }
-            if ((est.reprobadasCount || 0) > 0) {
-                return `<span class="badge bg-danger">Reprobado (${est.reprobadasCount})</span>`;
+
+            const reprobadasCompletas = mats.filter(m => {
+                const c = calcularFinalVisual(m.p1, m.p2, m.p3, m.ego);
+                return c.evaluadaCompleta && c.final < 6.0;
+            }).length;
+
+            if (reprobadasCompletas > 0) {
+                return `<span class="badge bg-danger">Reprobado (${reprobadasCompletas})</span>`;
             }
-            return `<span class="badge bg-success">Aprobado</span>`;
+
+            const todasCompletas = mats.length > 0 && mats.every(m => calcularFinalVisual(m.p1, m.p2, m.p3, m.ego).evaluadaCompleta);
+            if (todasCompletas) {
+                return `<span class="badge bg-success">Aprobado</span>`;
+            }
+
+            return `<span class="badge bg-info text-dark">En evaluación</span>`;
         }
 
         async function buscarMunicipioPorCP() {
@@ -659,68 +676,7 @@
         function copiarEnlaceAlumno() {
             const urlPortal = window.location.origin;
             navigator.clipboard?.writeText(urlPortal).catch(() => {});
-            alert(`Enlace del Portal Escolar UTFV:\n${urlPortal}`);
-        }
-
-        async function iniciarSesionAdmin(e) {
-            e.preventDefault();
-            const usuario = document.getElementById('loginUsuario').value.trim();
-            const password = document.getElementById('loginPassword').value;
-            const alerta = document.getElementById('errorLoginAdmin');
-            alerta.classList.add('d-none');
-
-            try {
-                const res = await fetch('/api/login-admin', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ usuario, password })
-                });
-                const data = await res.json();
-                if (!data.success) {
-                    alerta.innerText = data.error || "Credenciales inválidas";
-                    alerta.classList.remove('d-none');
-                    return;
-                }
-
-                document.getElementById('loginUsuario').value = "";
-                document.getElementById('loginPassword').value = "";
-                document.getElementById('vistaAccesos').classList.add('d-none');
-                document.getElementById('vistaAlumno').classList.add('d-none');
-                document.getElementById('vistaAdmin').classList.remove('d-none');
-                mostrarBarraNav("Sesión: Control Escolar", true);
-                cargarAspirantes();
-                cargarEstudiantes();
-            } catch (err) {
-                alerta.innerText = "Error de conexión con el servidor";
-                alerta.classList.remove('d-none');
-            }
-        }
-
-        async function iniciarSesionAlumno(e) {
-            e.preventDefault();
-            const matricula = document.getElementById('loginMatricula').value.trim();
-            const correo = document.getElementById('loginCorreo').value.trim();
-            const alerta = document.getElementById('errorLoginAlumno');
-            alerta.classList.add('d-none');
-
-            try {
-                const res = await fetch('/api/login-alumno', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ matricula, correo })
-                });
-                const data = await res.json();
-                if (!data.success) {
-                    alerta.innerText = data.error || "No se pudo iniciar sesión";
-                    alerta.classList.remove('d-none');
-                    return;
-                }
-
-                alumnoActualSesion = data.alumno;
-                document.getElementById('vistaAccesos').classList.add('d-none');
-                document.getElementById('vistaAdmin').classList.add('d-none');
-                document.getElementById('vistaAlumno').classList.remove('d-none');
-                mostrarBarraNav(`Alumno: ${data.alumno.matricula}`, false);
+            alert(`Enlace del Portal Escolar UTFV:\n${urlPortal}`); }  async function iniciarSesionAdmin(e) { e.preventDefault(); const usuario = document.getElementById('loginUsuario').value.trim(); const password = document.getElementById('loginPassword').value; const alerta = document.getElementById('errorLoginAdmin'); alerta.classList.add('d-none');  try { const res = await fetch('/api/login-admin', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ usuario, password }) }); const data = await res.json(); if (!data.success) { alerta.innerText = data.error \vert{}\vert{} "Credenciales inválidas"; alerta.classList.remove('d-none'); return; }  document.getElementById('loginUsuario').value = ""; document.getElementById('loginPassword').value = ""; document.getElementById('vistaAccesos').classList.add('d-none'); document.getElementById('vistaAlumno').classList.add('d-none'); document.getElementById('vistaAdmin').classList.remove('d-none'); mostrarBarraNav("Sesión: Control Escolar", true); cargarAspirantes(); cargarEstudiantes(); } catch (err) { alerta.innerText = "Error de conexión con el servidor"; alerta.classList.remove('d-none'); } }  async function iniciarSesionAlumno(e) { e.preventDefault(); const matricula = document.getElementById('loginMatricula').value.trim(); const correo = document.getElementById('loginCorreo').value.trim(); const alerta = document.getElementById('errorLoginAlumno'); alerta.classList.add('d-none');  try { const res = await fetch('/api/login-alumno', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ matricula, correo }) }); const data = await res.json(); if (!data.success) { alerta.innerText = data.error \vert{}\vert{} "No se pudo iniciar sesión"; alerta.classList.remove('d-none'); return; }  alumnoActualSesion = data.alumno; document.getElementById('vistaAccesos').classList.add('d-none'); document.getElementById('vistaAdmin').classList.add('d-none'); document.getElementById('vistaAlumno').classList.remove('d-none'); mostrarBarraNav(`Alumno: ${data.alumno.matricula}`, false);
                 renderizarPortalAlumno(data.alumno);
             } catch (err) {
                 alerta.innerText = "Error de conexión con el servidor";
@@ -731,11 +687,12 @@
         function renderizarPortalAlumno(est) {
             let filasMaterias = "";
             let reprobadas = 0;
+            let algunaCaptura = false;
 
             (est.materias || []).forEach(m => {
-                const finalNum = parseFloat(m.final ?? 0);
-                const tieneCalif = Boolean(m.tieneCalificacion) || finalNum > 0;
-                if (tieneCalif && finalNum < 6.0) reprobadas++;
+                const calc = calcularFinalVisual(m.p1, m.p2, m.p3, m.ego);
+                if (calc.tieneAlgunaCaptura) algunaCaptura = true;
+                if (calc.evaluadaCompleta && !calc.aprobada) reprobadas++;
 
                 const egoTexto = (m.ego !== null && m.ego !== undefined && String(m.ego) !== "" && Number(m.ego) > 0)
                     ? Number(m.ego).toFixed(1)
@@ -750,480 +707,5 @@
                         <td>${m.p2 ?? 0}</td>
                         <td>${m.p3 ?? 0}</td>
                         <td><span class="badge badge-utfv">${egoTexto}</span></td>
-                        <td><strong>${tieneCalif ? finalNum.toFixed(1) : "—"}</strong></td>
-                        <td>${badgeEstatusMateria(finalNum, tieneCalif)}</td>
-                    </tr>
-                `;
-            });
-
-            document.getElementById('contenidoPortalAlumno').innerHTML = `
-                <div class="row g-3 mb-4 p-3 rounded text-center text-md-start" style="background: var(--utfv-dorado-claro); border: 1px solid #e3d8c6;">
-                    <div class="col-md-6">
-                        <h5 class="mb-1 fw-bold" style="color: var(--utfv-guinda);">${est.nombre} ${est.apellidos || ""}</h5>
-                        <p class="mb-1 small"><strong>Matrícula:</strong> ${est.matricula}</p>
-                        <p class="mb-0 small"><strong>Correo:</strong> ${est.correo}</p>
-                    </div>
-                    <div class="col-md-6 text-md-end">
-                        <p class="mb-1 small"><strong>Carrera:</strong> ${est.carrera}</p>
-                        <p class="mb-1 small"><strong>Grupo:</strong> <span class="badge badge-utfv">${est.grupo}</span></p>
-                        <p class="mb-1 small"><strong>Materias Reprobadas (&lt; 6):</strong> <span class="badge ${reprobadas > 0 ? 'bg-danger' : 'bg-success'}">${reprobadas}</span></p>
-                        <p class="mb-0 small"><strong>Promedio Final:</strong> ${badgePromedio(est.promedioGeneral, est.tieneAlgunaCalificacion)}</p>
-                    </div>
-                </div>
-                <div class="table-responsive">
-                    <table class="table table-bordered table-hover align-middle text-center">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Clave</th>
-                                <th>Materia</th>
-                                <th>Profesor</th>
-                                <th>P1</th>
-                                <th>P2</th>
-                                <th>P3</th>
-                                <th>EGO</th>
-                                <th>Final</th>
-                                <th>Resultado</th>
-                            </tr>
-                        </thead>
-                        <tbody>${filasMaterias}</tbody>
-                    </table>
-                </div>
-            `;
-        }
-
-        async function guardarNuevoAspirante(e) {
-            e.preventDefault();
-            const payload = {
-                nombre: document.getElementById('aspNombre').value.trim(),
-                apellidoP: document.getElementById('aspApellidoP').value.trim(),
-                apellidoM: document.getElementById('aspApellidoM').value.trim(),
-                edad: document.getElementById('aspEdad').value,
-                codigoPostal: document.getElementById('aspCP').value.trim(),
-                municipio: document.getElementById('aspMunicipio').value.trim(),
-                calle: document.getElementById('aspCalle').value.trim(),
-                carrera: document.getElementById('aspCarrera').value
-            };
-
-            try {
-                const res = await fetch('/api/aspirantes', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                const data = await res.json();
-                if (data.success) {
-                    alert("¡Aspirante registrado correctamente!");
-                    e.target.reset();
-                    document.getElementById('estadoCP').innerText = "";
-                    bootstrap.Modal.getInstance(document.getElementById('modalAgregarAspirante')).hide();
-                    cargarAspirantes();
-                } else {
-                    alert("Error: " + (data.error || "No se pudo guardar el aspirante"));
-                }
-            } catch (err) {
-                alert("Error de conexión al guardar aspirante");
-            }
-        }
-
-        async function cargarAspirantes() {
-            try {
-                const res = await fetch('/api/aspirantes');
-                listaAspirantesGlobal = await res.json();
-                document.getElementById('kpiAspirantes').innerText = listaAspirantesGlobal.length;
-                renderizarAspirantes();
-            } catch (e) {
-                console.error("Error al cargar aspirantes:", e);
-            }
-        }
-
-        function renderizarAspirantes() {
-            const filtro = (document.getElementById('buscadorAspirantes')?.value || "").toLowerCase().trim();
-            const tbody = document.getElementById('tablaAspirantes');
-            tbody.innerHTML = '';
-
-            const filtrados = listaAspirantesGlobal.filter(asp => {
-                if (!filtro) return true;
-                const texto = `${asp.nombre || ''} ${asp.apellidoP || ''} ${asp.apellidoM || ''} ${asp.municipio || ''} ${asp.carrera || ''}`.toLowerCase();
-                return texto.includes(filtro);
-            });
-
-            if (!filtrados.length) {
-                tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted">No hay aspirantes pendientes por inscribir.</td></tr>`;
-                return;
-            }
-
-            filtrados.forEach(asp => {
-                const ubicacion = [
-                    asp.codigoPostal ? `CP ${asp.codigoPostal}` : "",
-                    asp.municipio || "",
-                    asp.calle ? `Calle: ${asp.calle}` : ""
-                ].filter(Boolean).join(" · ") || "N/A";
-
-                tbody.innerHTML += `
-                    <tr>
-                        <td>${asp.nombre || 'N/A'}</td>
-                        <td>${asp.apellidoP || asp.apellidos || ''} ${asp.apellidoM || ''}</td>
-                        <td>${asp.edad || 'N/A'}</td>
-                        <td class="small">${ubicacion}</td>
-                        <td class="small">${asp.carrera || 'Licenciatura en Ingeniería en Tecnologías de la Información e Innovación Digital'}</td>
+                        <td><strong>${calc.tieneAlgunaCaptura ? calc.final.toFixed(1) : "—"}</strong></td>
                         <td>
-                            <button class="btn btn-utfv btn-sm" onclick="convertirEstudiante('${asp._id}')">Inscribir</button>
-                        </td>
-                    </tr>
-                `;
-            });
-        }
-
-        async function convertirEstudiante(id) {
-            try {
-                const res = await fetch(`/api/convertir/${id}`, { method: 'POST' });
-                const data = await res.json();
-                if (data.success) {
-                    alert(`¡Inscripción exitosa!\nMatrícula: ${data.matricula}\nCorreo: ${data.correo}`);
-                    await cargarAspirantes();
-                    await cargarEstudiantes();
-                } else {
-                    alert("Error: " + data.error);
-                }
-            } catch (e) {
-                alert("Error al conectar con el servidor.");
-            }
-        }
-
-        async function cargarEstudiantes() {
-            try {
-                const res = await fetch('/api/estudiantes');
-                listaEstudiantesGlobal = await res.json();
-                document.getElementById('kpiEstudiantes').innerText = listaEstudiantesGlobal.length;
-
-                const calificados = listaEstudiantesGlobal.filter(e => e.tieneAlgunaCalificacion);
-                if (calificados.length > 0) {
-                    const sumaProm = calificados.reduce((acc, e) => acc + parseFloat(e.promedioGeneral || 0), 0);
-                    document.getElementById('kpiPromedio').innerText = (sumaProm / calificados.length).toFixed(2);
-                } else {
-                    document.getElementById('kpiPromedio').innerText = "0.00";
-                }
-
-                filtrarEstudiantes();
-            } catch (e) {
-                console.error("Error al cargar estudiantes:", e);
-            }
-        }
-
-        function actualizarFiltroGrupos() {
-            const carreraSel = document.getElementById('filtroCarrera').value;
-            const selectGrupo = document.getElementById('filtroGrupo');
-            selectGrupo.innerHTML = `<option value="TODOS">Todos los Grupos</option>`;
-
-            if (carreraSel === "TODAS") {
-                Object.values(CATALOGO_CARRERAS).forEach(cfg => {
-                    cfg.grupos.forEach(g => {
-                        selectGrupo.innerHTML += `<option value="${g}">${g}</option>`;
-                    });
-                });
-            } else if (CATALOGO_CARRERAS[carreraSel]) {
-                CATALOGO_CARRERAS[carreraSel].grupos.forEach(g => {
-                    selectGrupo.innerHTML += `<option value="${g}">${g}</option>`;
-                });
-            }
-        }
-
-        function filtrarEstudiantes() {
-            const textoBuscador = document.getElementById('inputBuscador').value.toLowerCase();
-            const carreraFiltro = document.getElementById('filtroCarrera').value;
-            const grupoFiltro = document.getElementById('filtroGrupo').value;
-            const tbody = document.getElementById('tablaEstudiantes');
-            tbody.innerHTML = '';
-
-            const filtrados = listaEstudiantesGlobal.filter(est => {
-                const coincideTexto = est.matricula.toLowerCase().includes(textoBuscador) ||
-                    (est.nombre + " " + est.apellidos).toLowerCase().includes(textoBuscador);
-                const coincideCarrera = (carreraFiltro === "TODAS" || est.carrera === carreraFiltro);
-                const coincideGrupo = (grupoFiltro === "TODOS" || String(est.grupo) === String(grupoFiltro));
-                return coincideTexto && coincideCarrera && coincideGrupo;
-            });
-
-            if (!filtrados.length) {
-                tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted">No se encontraron estudiantes con esos criterios.</td></tr>`;
-                return;
-            }
-
-            filtrados.forEach(est => {
-                const idUnico = est._id || est.matricula;
-                tbody.innerHTML += `
-                    <tr>
-                        <td><strong>${est.matricula}</strong></td>
-                        <td><span class="small">${est.correo}</span></td>
-                        <td>${est.nombre} ${est.apellidos}</td>
-                        <td class="small">${est.carrera}</td>
-                        <td><span class="badge badge-utfv">${est.grupo}</span></td>
-                        <td>${badgePromedio(est.promedioGeneral, est.tieneAlgunaCalificacion)}</td>
-                        <td>${badgeEstatusAlumno(est)}</td>
-                        <td>
-                            <button class="btn btn-outline-dark btn-sm" onclick="verBoleta('${idUnico}')">⚙️ Gestionar</button>
-                        </td>
-                    </tr>
-                `;
-            });
-        }
-
-        function obtenerAlumnoSeleccionado() {
-            return listaEstudiantesGlobal.find(e => e._id === alumnoSeleccionadoId);
-        }
-
-        function verBoleta(idUnico) {
-            const est = listaEstudiantesGlobal.find(e => (e._id === idUnico || e.matricula === idUnico));
-            if (!est) return;
-
-            alumnoSeleccionadoId = est._id;
-            materiasBorradorModal = JSON.parse(JSON.stringify(est.materias || []));
-
-            const opcionesCarrera = Object.keys(CATALOGO_CARRERAS).map(c =>
-                `<option value="${c}" ${est.carrera === c ? 'selected' : ''}>${c}</option>`
-            ).join("");
-
-            const gruposDisponibles = (CATALOGO_CARRERAS[est.carrera] || CATALOGO_CARRERAS["Licenciatura en Ingeniería en Tecnologías de la Información e Innovación Digital"]).grupos;
-            const opcionesGrupo = gruposDisponibles.map(g =>
-                `<option value="${g}" ${String(est.grupo) === String(g) ? 'selected' : ''}>${g}</option>`
-            ).join("");
-
-            document.getElementById('contenidoBoleta').innerHTML = `
-                <div class="text-center mb-3">
-                    <h6 class="fw-bold mb-1" style="color: var(--utfv-guinda);">${est.nombre} ${est.apellidos}</h6>
-                    <small class="text-muted">Matrícula: <strong>${est.matricula}</strong> · Correo: ${est.correo}</small>
-                </div>
-                <div class="row mb-3 g-3">
-                    <div class="col-md-6">
-                        <label class="form-label fw-bold small">Carrera:</label>
-                        <select id="selectCarreraModal" class="form-select form-select-sm" onchange="alCambiarCarreraEnModal()">
-                            ${opcionesCarrera}
-                        </select>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label fw-bold small">Grupo:</label>
-                        <select id="selectNuevoGrupoModal" class="form-select form-select-sm">
-                            ${opcionesGrupo}
-                        </select>
-                    </div>
-                </div>
-                <div class="alert py-2 small text-center" style="background: var(--utfv-dorado-claro); border-color: var(--utfv-dorado);">
-                    Escala estricta de <strong>0.0 a 10.0</strong> · Mínimo aprobatorio: <strong>6.0</strong>. Si ingresas calificación en <strong>EGO</strong>, se carga automáticamente como calificación <strong>Final</strong> al concluir el EGO.
-                </div>
-                <div id="contenedorTablaMateriasModal"></div>
-            `;
-
-            renderizarTablaMateriasModal();
-            new bootstrap.Modal(document.getElementById('modalBoleta')).show();
-        }
-
-        function alCambiarCarreraEnModal() {
-            const nuevaCarrera = document.getElementById('selectCarreraModal').value;
-            const cfg = CATALOGO_CARRERAS[nuevaCarrera];
-            const selectGrupo = document.getElementById('selectNuevoGrupoModal');
-
-            selectGrupo.innerHTML = cfg.grupos.map(g => `<option value="${g}">${g}</option>`).join("");
-            materiasBorradorModal = cfg.materias.map((m, idx) => ({
-                clave: `MAT-${101 + idx}`,
-                nombre: m.nombre,
-                profesor: m.profesor,
-                horario: "Lun-Vie 07:00 - 15:00",
-                p1: 0,
-                p2: 0,
-                p3: 0,
-                ego: null,
-                final: 0,
-                tieneCalificacion: false
-            }));
-            renderizarTablaMateriasModal();
-        }
-
-        function renderizarTablaMateriasModal() {
-            let html = `
-                <div class="table-responsive">
-                    <table class="table table-sm table-bordered align-middle text-center">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Clave</th>
-                                <th>Materia</th>
-                                <th>Profesor</th>
-                                <th>P1 (0-10)</th>
-                                <th>P2 (0-10)</th>
-                                <th>P3 (0-10)</th>
-                                <th>EGO (0-10)</th>
-                                <th>Final</th>
-                                <th>Estado</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-            `;
-
-            materiasBorradorModal.forEach((mat, idx) => {
-                const egoValor = (mat.ego !== null && mat.ego !== undefined && String(mat.ego) !== "" && Number(mat.ego) > 0) ? mat.ego : "";
-                const calc = calcularFinalVisual(mat.p1 ?? 0, mat.p2 ?? 0, mat.p3 ?? 0, egoValor);
-                html += `
-                    <tr>
-                        <td><input type="text" class="form-control form-control-sm text-center" id="materia-clave-${idx}" value="${mat.clave || ''}" style="width: 82px;"></td>
-                        <td><input type="text" class="form-control form-control-sm" id="materia-nombre-${idx}" value="${mat.nombre || ''}"></td>
-                        <td><input type="text" class="form-control form-control-sm" id="materia-profesor-${idx}" value="${mat.profesor || ''}"></td>
-                        <td><input type="number" step="0.1" min="0" max="10" class="form-control form-control-sm text-center input-calif" data-index="${idx}" data-tipo="p1" value="${mat.p1 ?? 0}" oninput="recalcularFila(${idx})" onblur="recalcularFila(${idx})" style="width: 72px;"></td>
-                        <td><input type="number" step="0.1" min="0" max="10" class="form-control form-control-sm text-center input-calif" data-index="${idx}" data-tipo="p2" value="${mat.p2 ?? 0}" oninput="recalcularFila(${idx})" onblur="recalcularFila(${idx})" style="width: 72px;"></td>
-                        <td><input type="number" step="0.1" min="0" max="10" class="form-control form-control-sm text-center input-calif" data-index="${idx}" data-tipo="p3" value="${mat.p3 ?? 0}" oninput="recalcularFila(${idx})" onblur="recalcularFila(${idx})" style="width: 72px;"></td>
-                        <td><input type="number" step="0.1" min="0" max="10" placeholder="EGO" class="form-control form-control-sm text-center input-ego" data-index="${idx}" value="${egoValor}" oninput="recalcularFila(${idx})" onblur="recalcularFila(${idx})" style="width: 76px;"></td>
-                        <td><strong id="final-${idx}">${calc.tieneCalif ? calc.final.toFixed(1) : "—"}</strong></td>
-                        <td id="estado-fila-${idx}">${badgeEstatusMateria(calc.final, calc.tieneCalif)}</td>
-                    </tr>
-                `;
-            });
-
-            html += `</tbody></table></div>`;
-            document.getElementById('contenedorTablaMateriasModal').innerHTML = html;
-        }
-
-        function recalcularFila(idx) {
-            const elP1 = document.querySelector(`input[data-index="${idx}"].input-calif[data-tipo="p1"]`);
-            const elP2 = document.querySelector(`input[data-index="${idx}"].input-calif[data-tipo="p2"]`);
-            const elP3 = document.querySelector(`input[data-index="${idx}"].input-calif[data-tipo="p3"]`);
-            const elEgo = document.querySelector(`input[data-index="${idx}"].input-ego`);
-
-            const p1 = clampCalifInput(elP1, false);
-            const p2 = clampCalifInput(elP2, false);
-            const p3 = clampCalifInput(elP3, false);
-            const egoRaw = clampCalifInput(elEgo, true);
-
-            const calc = calcularFinalVisual(p1, p2, p3, egoRaw);
-            document.getElementById(`final-${idx}`).innerText = calc.tieneCalif ? calc.final.toFixed(1) : "—";
-            document.getElementById(`estado-fila-${idx}`).innerHTML = badgeEstatusMateria(calc.final, calc.tieneCalif);
-        }
-
-        async function guardarTodosLosCambios() {
-            if (!alumnoSeleccionadoId) return;
-
-            const nuevoGrupo = document.getElementById('selectNuevoGrupoModal').value;
-            const nuevaCarrera = document.getElementById('selectCarreraModal').value;
-
-            const nuevasMaterias = materiasBorradorModal.map((mat, idx) => {
-                const clave = document.getElementById(`materia-clave-${idx}`).value;
-                const nombre = document.getElementById(`materia-nombre-${idx}`).value;
-                const profesor = document.getElementById(`materia-profesor-${idx}`).value;
-
-                const elP1 = document.querySelector(`input[data-index="${idx}"].input-calif[data-tipo="p1"]`);
-                const elP2 = document.querySelector(`input[data-index="${idx}"].input-calif[data-tipo="p2"]`);
-                const elP3 = document.querySelector(`input[data-index="${idx}"].input-calif[data-tipo="p3"]`);
-                const elEgo = document.querySelector(`input[data-index="${idx}"].input-ego`);
-
-                const p1 = clampCalifInput(elP1, false);
-                const p2 = clampCalifInput(elP2, false);
-                const p3 = clampCalifInput(elP3, false);
-                const egoRaw = clampCalifInput(elEgo, true);
-                const ego = (egoRaw !== "" && egoRaw !== null) ? egoRaw : null;
-
-                const calc = calcularFinalVisual(p1, p2, p3, egoRaw);
-
-                return {
-                    clave,
-                    nombre,
-                    profesor,
-                    horario: mat.horario || "Lun-Vie 07:00 - 15:00",
-                    p1,
-                    p2,
-                    p3,
-                    ego,
-                    final: calc.final
-                };
-            });
-
-            try {
-                const res = await fetch(`/api/actualizar-todo/${alumnoSeleccionadoId}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ grupo: nuevoGrupo, carrera: nuevaCarrera, materias: nuevasMaterias })
-                });
-                const data = await res.json();
-                if (data.success) {
-                    alert("¡Cambios guardados correctamente en MongoDB Atlas!");
-                    bootstrap.Modal.getInstance(document.getElementById('modalBoleta')).hide();
-                    cargarEstudiantes();
-                } else {
-                    alert("Error al guardar los cambios.");
-                }
-            } catch (e) {
-                alert("Error de conexión con el servidor.");
-            }
-        }
-
-        function descargarBoletaPdf(est) {
-            if (!est) return;
-
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-
-            doc.setFillColor(156, 29, 56);
-            doc.rect(0, 0, 210, 25, 'F');
-            doc.setFillColor(196, 147, 79);
-            doc.rect(0, 25, 210, 2, 'F');
-
-            doc.setTextColor(255, 255, 255);
-            doc.setFont("helvetica", "bold");
-            doc.setFontSize(14);
-            doc.text("UNIVERSIDAD TECNOLÓGICA FIDEL VELÁZQUEZ", 105, 12, { align: "center" });
-            doc.setFontSize(10);
-            doc.text("BOLETA DE CALIFICACIONES OFICIAL (MÍNIMO APROBATORIO: 6.0)", 105, 19, { align: "center" });
-
-            doc.setTextColor(0, 0, 0);
-            doc.setFontSize(10);
-            let y = 37;
-            doc.text(`Alumno: ${est.nombre} ${est.apellidos || ""}`, 14, y);
-            doc.text(`Matrícula: ${est.matricula}`, 14, y + 6);
-            doc.text(`Correo: ${est.correo}`, 14, y + 12);
-            doc.text(`Grupo: ${est.grupo}`, 135, y);
-            doc.text(`Promedio Final: ${est.tieneAlgunaCalificacion ? (est.promedioGeneral ?? 0) : "Sin calif."}`, 135, y + 6);
-            doc.text(`Carrera: ${est.carrera}`, 14, y + 18);
-            doc.setFontSize(8);
-            doc.text(`Emisión: ${new Date().toLocaleString("es-MX")}`, 135, y + 12);
-            doc.setFontSize(10);
-
-            y = 67;
-            doc.setFillColor(248, 243, 234);
-            doc.rect(14, y, 182, 8, 'F');
-            doc.setFont("helvetica", "bold");
-            doc.setFontSize(9);
-            doc.text("Materia", 16, y + 6);
-            doc.text("Profesor", 92, y + 6);
-            doc.text("P1", 132, y + 6);
-            doc.text("P2", 141, y + 6);
-            doc.text("P3", 150, y + 6);
-            doc.text("EGO", 159, y + 6);
-            doc.text("Final", 170, y + 6);
-            doc.text("Estado", 181, y + 6);
-
-            doc.setFont("helvetica", "normal");
-            y += 13;
-
-            (est.materias || []).forEach(m => {
-                const finalNum = parseFloat(m.final ?? 0);
-                const tieneCalif = Boolean(m.tieneCalificacion) || finalNum > 0;
-                const estadoTxt = !tieneCalif ? "Pend." : (finalNum >= 6.0 ? "Aprob." : "Reprob.");
-                const egoTxt = (m.ego !== null && m.ego !== undefined && String(m.ego) !== "" && Number(m.ego) > 0)
-                    ? String(m.ego)
-                    : "-";
-                const matTxt = m.nombre.length > 30 ? m.nombre.substring(0, 27) + "..." : m.nombre;
-                const profTxt = (m.profesor || "").length > 16 ? m.profesor.substring(0, 13) + "..." : (m.profesor || "");
-
-                doc.text(matTxt, 16, y);
-                doc.text(profTxt, 92, y);
-                doc.text(String(m.p1 ?? 0), 133, y);
-                doc.text(String(m.p2 ?? 0), 142, y);
-                doc.text(String(m.p3 ?? 0), 151, y);
-                doc.text(egoTxt, 160, y);
-                doc.setFont("helvetica", "bold");
-                doc.text(tieneCalif ? finalNum.toFixed(1) : "-", 170, y);
-                doc.text(estadoTxt, 181, y);
-                doc.setFont("helvetica", "normal");
-                y += 8;
-            });
-
-            doc.save(`Boleta_Oficial_${est.matricula}.pdf`);
-        }
-    </script>
-</body>
-</html>
