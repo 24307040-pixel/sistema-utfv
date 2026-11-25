@@ -137,7 +137,6 @@
 </head>
 <body>
 
-    <!-- Barra de Navegación Institucional -->
     <nav class="navbar navbar-dark navbar-utfv shadow-sm sticky-top">
         <div class="container-fluid gap-2">
             <span class="navbar-brand mb-0 h1 d-flex align-items-center gap-2">
@@ -146,13 +145,13 @@
             </span>
             <div class="d-flex align-items-center gap-2 flex-wrap" id="barraAccionesNav" style="display: none !important;">
                 <span class="text-white small d-none d-md-inline" id="etiquetaUsuario"></span>
-                <button class="btn btn-dorado btn-sm fw-bold" id="btnCopiarEnlace" onclick="copiarEnlaceAlumno()">🔗 Copiar Enlace Portal</button>
-                <button class="btn btn-light btn-sm fw-bold text-dark" onclick="cerrarSesion()">Cerrar Sesión</button>
+                <button type="button" class="btn btn-dorado btn-sm fw-bold" id="btnCopiarEnlace" onclick="copiarEnlaceAlumno()">🔗 Copiar Enlace Portal</button>
+                <button type="button" class="btn btn-light btn-sm fw-bold text-dark" onclick="cerrarSesion()">Cerrar Sesión</button>
             </div>
         </div>
     </nav>
 
-    <!-- PANTALLA INICIAL CON DOS TARJETAS SEPARADAS -->
+    <!-- PANTALLA INICIAL -->
     <div id="vistaAccesos" class="container py-5">
         <div class="text-center mb-5">
             <img src="/logo-utfv.jpg" alt="Universidad Tecnológica Fidel Velázquez" class="logo-utfv mb-2" onerror="this.style.display='none'">
@@ -164,7 +163,6 @@
         </div>
 
         <div class="row g-4 justify-content-center align-items-stretch">
-            <!-- TARJETA 1: PORTAL DEL ALUMNO -->
             <div class="col-12 col-md-6 col-lg-5">
                 <div class="card card-utfv shadow h-100 bg-white">
                     <div class="card-header card-header-dorado py-3">
@@ -188,7 +186,6 @@
                 </div>
             </div>
 
-            <!-- TARJETA 2: CONTROL ESCOLAR (CONFIDENCIAL) -->
             <div class="col-12 col-md-6 col-lg-5">
                 <div class="card card-utfv shadow h-100 bg-white">
                     <div class="card-header card-header-utfv py-3">
@@ -251,7 +248,6 @@
             </div>
         </div>
 
-        <!-- SECCIÓN 1: ASPIRANTES -->
         <div class="card card-utfv shadow-sm mb-4">
             <div class="card-header card-header-utfv py-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <span class="mx-auto">📋 ASPIRANTES EN PROCESO</span>
@@ -286,7 +282,6 @@
             </div>
         </div>
 
-        <!-- SECCIÓN 2: ESTUDIANTES INSCRITOS -->
         <div class="card card-utfv shadow-sm">
             <div class="card-header card-header-utfv py-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <span class="mx-auto">📚 ESTUDIANTES INSCRITOS Y CONTROL ACADÉMICO</span>
@@ -508,21 +503,15 @@
 
         document.addEventListener("DOMContentLoaded", () => {
             actualizarFiltroGrupos();
-            const formAdmin = document.getElementById("formLoginAdmin");
-            const formAlumno = document.getElementById("formLoginAlumno");
-            const formAsp = document.getElementById("formAgregarAspirante");
-
-            if (formAdmin) formAdmin.addEventListener("submit", iniciarSesionAdmin);
-            if (formAlumno) formAlumno.addEventListener("submit", iniciarSesionAlumno);
-            if (formAsp) formAsp.addEventListener("submit", guardarNuevoAspirante);
+            document.getElementById("formLoginAdmin")?.addEventListener("submit", iniciarSesionAdmin);
+            document.getElementById("formLoginAlumno")?.addEventListener("submit", iniciarSesionAlumno);
+            document.getElementById("formAgregarAspirante")?.addEventListener("submit", guardarNuevoAspirante);
         });
 
         function clampCalifInput(inputEl, permitirVacio = false) {
             if (!inputEl) return permitirVacio ? "" : 0;
-            let raw = String(inputEl.value ?? "");
-            if (raw === "") {
-                return permitirVacio ? "" : 0;
-            }
+            const raw = String(inputEl.value ?? "");
+            if (raw === "") return permitirVacio ? "" : 0;
             let num = parseFloat(raw);
             if (isNaN(num)) {
                 inputEl.value = permitirVacio ? "" : "0";
@@ -542,9 +531,9 @@
             const n2 = Math.min(10, Math.max(0, parseFloat(p2Raw) || 0));
             const n3 = Math.min(10, Math.max(0, parseFloat(p3Raw) || 0));
 
-            const p1Evaluado = p1Raw !== "" && p1Raw !== null && p1Raw !== undefined && n1 > 0;
-            const p2Evaluado = p2Raw !== "" && p2Raw !== null && p2Raw !== undefined && n2 > 0;
-            const p3Evaluado = p3Raw !== "" && p3Raw !== null && p3Raw !== undefined && n3 > 0;
+            const p1Evaluado = n1 > 0;
+            const p2Evaluado = n2 > 0;
+            const p3Evaluado = n3 > 0;
             const tresParcialesEvaluados = p1Evaluado && p2Evaluado && p3Evaluado;
 
             const tieneEgo = egoRaw !== "" && egoRaw !== null && egoRaw !== undefined && (parseFloat(egoRaw) || 0) > 0;
@@ -1088,4 +1077,171 @@
             `;
 
             materiasBorradorModal.forEach((mat, idx) => {
-                const egoValor = (mat.ego !== null && mat.ego !== undefined && String(mat.ego) !== "" && Number(mat.ego
+                const egoValor = (mat.ego !== null && mat.ego !== undefined && String(mat.ego) !== "" && Number(mat.ego) > 0) ? mat.ego : "";
+                const calc = calcularFinalVisual(mat.p1 ?? 0, mat.p2 ?? 0, mat.p3 ?? 0, egoValor);
+                html += `
+                    <tr>
+                        <td><input type="text" class="form-control form-control-sm text-center" id="materia-clave-${idx}" value="${mat.clave || ''}" style="width: 82px;"></td>
+                        <td><input type="text" class="form-control form-control-sm" id="materia-nombre-${idx}" value="${mat.nombre || ''}"></td>
+                        <td><input type="text" class="form-control form-control-sm" id="materia-profesor-${idx}" value="${mat.profesor || ''}"></td>
+                        <td><input type="number" step="0.1" min="0" max="10" class="form-control form-control-sm text-center input-calif" data-index="${idx}" data-tipo="p1" value="${mat.p1 ?? 0}" oninput="recalcularFila(${idx})" onblur="recalcularFila(${idx})" style="width: 72px;"></td>
+                        <td><input type="number" step="0.1" min="0" max="10" class="form-control form-control-sm text-center input-calif" data-index="${idx}" data-tipo="p2" value="${mat.p2 ?? 0}" oninput="recalcularFila(${idx})" onblur="recalcularFila(${idx})" style="width: 72px;"></td>
+                        <td><input type="number" step="0.1" min="0" max="10" class="form-control form-control-sm text-center input-calif" data-index="${idx}" data-tipo="p3" value="${mat.p3 ?? 0}" oninput="recalcularFila(${idx})" onblur="recalcularFila(${idx})" style="width: 72px;"></td>
+                        <td><input type="number" step="0.1" min="0" max="10" placeholder="EGO" class="form-control form-control-sm text-center input-ego" data-index="${idx}" value="${egoValor}" oninput="recalcularFila(${idx})" onblur="recalcularFila(${idx})" style="width: 76px;"></td>
+                        <td><strong id="final-${idx}">${calc.tieneAlgunaCaptura ? calc.final.toFixed(1) : "—"}</strong></td>
+                        <td id="estado-fila-${idx}">${badgeEstatusMateria(calc.final, calc.evaluadaCompleta, calc.tieneAlgunaCaptura)}</td>
+                    </tr>
+                `;
+            });
+
+            html += `</tbody></table></div>`;
+            document.getElementById('contenedorTablaMateriasModal').innerHTML = html;
+        }
+
+        function recalcularFila(idx) {
+            const elP1 = document.querySelector(`input[data-index="${idx}"].input-calif[data-tipo="p1"]`);
+            const elP2 = document.querySelector(`input[data-index="${idx}"].input-calif[data-tipo="p2"]`);
+            const elP3 = document.querySelector(`input[data-index="${idx}"].input-calif[data-tipo="p3"]`);
+            const elEgo = document.querySelector(`input[data-index="${idx}"].input-ego`);
+
+            const p1 = clampCalifInput(elP1, false);
+            const p2 = clampCalifInput(elP2, false);
+            const p3 = clampCalifInput(elP3, false);
+            const egoRaw = clampCalifInput(elEgo, true);
+
+            const calc = calcularFinalVisual(p1, p2, p3, egoRaw);
+            document.getElementById(`final-${idx}`).innerText = calc.tieneAlgunaCaptura ? calc.final.toFixed(1) : "—";
+            document.getElementById(`estado-fila-${idx}`).innerHTML = badgeEstatusMateria(calc.final, calc.evaluadaCompleta, calc.tieneAlgunaCaptura);
+        }
+
+        async function guardarTodosLosCambios() {
+            if (!alumnoSeleccionadoId) return;
+
+            const nuevoGrupo = document.getElementById('selectNuevoGrupoModal').value;
+            const nuevaCarrera = document.getElementById('selectCarreraModal').value;
+
+            const nuevasMaterias = materiasBorradorModal.map((mat, idx) => {
+                const clave = document.getElementById(`materia-clave-${idx}`).value;
+                const nombre = document.getElementById(`materia-nombre-${idx}`).value;
+                const profesor = document.getElementById(`materia-profesor-${idx}`).value;
+
+                const elP1 = document.querySelector(`input[data-index="${idx}"].input-calif[data-tipo="p1"]`);
+                const elP2 = document.querySelector(`input[data-index="${idx}"].input-calif[data-tipo="p2"]`);
+                const elP3 = document.querySelector(`input[data-index="${idx}"].input-calif[data-tipo="p3"]`);
+                const elEgo = document.querySelector(`input[data-index="${idx}"].input-ego`);
+
+                const p1 = clampCalifInput(elP1, false);
+                const p2 = clampCalifInput(elP2, false);
+                const p3 = clampCalifInput(elP3, false);
+                const egoRaw = clampCalifInput(elEgo, true);
+                const ego = (egoRaw !== "" && egoRaw !== null && Number(egoRaw) > 0) ? egoRaw : null;
+
+                const calc = calcularFinalVisual(p1, p2, p3, egoRaw);
+
+                return {
+                    clave,
+                    nombre,
+                    profesor,
+                    horario: mat.horario || "Lun-Vie 07:00 - 15:00",
+                    p1,
+                    p2,
+                    p3,
+                    ego,
+                    final: calc.final
+                };
+            });
+
+            try {
+                const res = await fetch(`/api/actualizar-todo/${alumnoSeleccionadoId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ grupo: nuevoGrupo, carrera: nuevaCarrera, materias: nuevasMaterias })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    alert("¡Cambios guardados correctamente en MongoDB Atlas!");
+                    bootstrap.Modal.getInstance(document.getElementById('modalBoleta')).hide();
+                    cargarEstudiantes();
+                } else {
+                    alert("Error al guardar los cambios.");
+                }
+            } catch (e) {
+                alert("Error de conexión con el servidor.");
+            }
+        }
+
+        function descargarBoletaPdf(est) {
+            if (!est) return;
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            doc.setFillColor(156, 29, 56);
+            doc.rect(0, 0, 210, 25, 'F');
+            doc.setFillColor(196, 147, 79);
+            doc.rect(0, 25, 210, 2, 'F');
+
+            doc.setTextColor(255, 255, 255);
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(14);
+            doc.text("UNIVERSIDAD TECNOLÓGICA FIDEL VELÁZQUEZ", 105, 12, { align: "center" });
+            doc.setFontSize(10);
+            doc.text("BOLETA DE CALIFICACIONES OFICIAL (MÍNIMO APROBATORIO: 6.0)", 105, 19, { align: "center" });
+
+            doc.setTextColor(0, 0, 0);
+            doc.setFontSize(10);
+            let y = 37;
+            doc.text(`Alumno: ${est.nombre} ${est.apellidos || ""}`, 14, y);
+            doc.text(`Matrícula: ${est.matricula}`, 14, y + 6);
+            doc.text(`Correo: ${est.correo}`, 14, y + 12);
+            doc.text(`Grupo: ${est.grupo}`, 135, y);
+            doc.text(`Promedio Final: ${est.promedioGeneral ?? "0.00"}`, 135, y + 6);
+            doc.text(`Carrera: ${est.carrera}`, 14, y + 18);
+            doc.setFontSize(8);
+            doc.text(`Emisión: ${new Date().toLocaleString("es-MX")}`, 135, y + 12);
+            doc.setFontSize(10);
+
+            y = 67;
+            doc.setFillColor(248, 243, 234);
+            doc.rect(14, y, 182, 8, 'F');
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(9);
+            doc.text("Materia", 16, y + 6);
+            doc.text("Profesor", 92, y + 6);
+            doc.text("P1", 132, y + 6);
+            doc.text("P2", 141, y + 6);
+            doc.text("P3", 150, y + 6);
+            doc.text("EGO", 159, y + 6);
+            doc.text("Final", 170, y + 6);
+            doc.text("Estado", 181, y + 6);
+
+            doc.setFont("helvetica", "normal");
+            y += 13;
+
+            (est.materias || []).forEach(m => {
+                const calc = calcularFinalVisual(m.p1, m.p2, m.p3, m.ego);
+                const estadoTxt = !calc.evaluadaCompleta ? "En eval." : (calc.final >= 6.0 ? "Aprob." : "Reprob.");
+                const egoTxt = (m.ego !== null && m.ego !== undefined && String(m.ego) !== "" && Number(m.ego) > 0)
+                    ? String(m.ego)
+                    : "-";
+                const matTxt = m.nombre.length > 30 ? m.nombre.substring(0, 27) + "..." : m.nombre;
+                const profTxt = (m.profesor || "").length > 16 ? m.profesor.substring(0, 13) + "..." : (m.profesor || "");
+
+                doc.text(matTxt, 16, y);
+                doc.text(profTxt, 92, y);
+                doc.text(String(m.p1 ?? 0), 133, y);
+                doc.text(String(m.p2 ?? 0), 142, y);
+                doc.text(String(m.p3 ?? 0), 151, y);
+                doc.text(egoTxt, 160, y);
+                doc.setFont("helvetica", "bold");
+                doc.text(calc.tieneAlgunaCaptura ? calc.final.toFixed(1) : "-", 170, y);
+                doc.text(estadoTxt, 181, y);
+                doc.setFont("helvetica", "normal");
+                y += 8;
+            });
+
+            doc.save(`Boleta_Oficial_${est.matricula}.pdf`);
+        }
+    </script>
+</body>
+</html>
