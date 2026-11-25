@@ -49,26 +49,43 @@ const CATALOGO_ACADEMICO = {
   }
 };
 
-function calcularCalificacionFinalMateria(materia) {
-  const p1 = parseFloat(materia.p1 ?? 0) || 0;
-  const p2 = parseFloat(materia.p2 ?? 0) || 0;
-  const p3 = parseFloat(materia.p3 ?? 0) || 0;
-  const tieneEgo = materia.ego !== undefined && materia.ego !== null && String(materia.ego).trim() !== "";
-  const egoNum = tieneEgo ? (parseFloat(materia.ego) || 0) : null;
+function limitarCalif(valor) {
+  if (valor === "" || valor === null || valor === undefined) return null;
+  const num = parseFloat(valor);
+  if (isNaN(num)) return null;
+  if (num < 0) return 0;
+  if (num > 10) return 10;
+  return parseFloat(num.toFixed(1));
+}
+
+function evaluarMateria(materia) {
+  const p1 = limitarCalif(materia.p1) ?? 0;
+  const p2 = limitarCalif(materia.p2) ?? 0;
+  const p3 = limitarCalif(materia.p3) ?? 0;
+  const ego = limitarCalif(materia.ego);
+
+  const tieneParciales = (materia.p1 !== undefined && materia.p1 !== null && String(materia.p1) !== "" && p1 > 0) ||
+    (materia.p2 !== undefined && materia.p2 !== null && String(materia.p2) !== "" && p2 > 0) ||
+    (materia.p3 !== undefined && materia.p3 !== null && String(materia.p3) !== "" && p3 > 0);
+  const tieneEgo = ego !== null && ego > 0;
+  const tieneCalificacion = tieneParciales || tieneEgo;
 
   const promedioOrdinario = parseFloat(((p1 + p2 + p3) / 3).toFixed(1));
 
-  // Calificación mínima aprobatoria = 6.0
-  // Si tiene EGO registrado, al concluir el EGO se carga la calificación de EGO si es mayor o si reprobó ordinario
   let final = promedioOrdinario;
-  if (egoNum !== null && egoNum > 0) {
-    final = parseFloat(egoNum.toFixed(1));
-  } else if (materia.final !== undefined && materia.final !== null && String(materia.final).trim() !== "" && p1 === 0 && p2 === 0 && p3 === 0) {
-    final = parseFloat((parseFloat(materia.final) || 0).toFixed(1));
+  if (tieneEgo) {
+    final = parseFloat(ego.toFixed(1));
+  } else if (!tieneParciales && materia.final !== undefined && materia.final !== null && String(materia.final) !== "") {
+    final = limitarCalif(materia.final) ?? 0;
   }
 
-  const aprobada = final >= 6.0;
-  const estatus = aprobada ? "Aprobada" : "Reprobada";
+  let estatus = "Pendiente";
+  let aprobada = false;
+
+  if (tieneCalificacion || final > 0) {
+    aprobada = final >= 6.0;
+    estatus = aprobada ? "Aprobada" : "Reprobada";
+  }
 
   return {
     clave: materia.clave || "MAT-101",
@@ -78,8 +95,9 @@ function calcularCalificacionFinalMateria(materia) {
     p1,
     p2,
     p3,
-    ego: egoNum,
+    ego,
     final,
+    tieneCalificacion: tieneCalificacion || final > 0,
     aprobada,
     estatus
   };
@@ -87,7 +105,7 @@ function calcularCalificacionFinalMateria(materia) {
 
 function generarMateriasPorCarrera(carrera) {
   const config = CATALOGO_ACADEMICO[carrera] || CATALOGO_ACADEMICO["Licenciatura en Ingeniería en Tecnologías de la Información e Innovación Digital"];
-  return config.materias.map((item, idx) => calcularCalificacionFinalMateria({
+  return config.materias.map((item, idx) => evaluarMateria({
     clave: `MAT-${101 + idx}`,
     nombre: item.nombre,
     profesor: item.profesor,
@@ -117,19 +135,22 @@ function normalizarEstudiante(est, index = 0) {
     ? est.materias
     : generarMateriasPorCarrera(carrera);
 
-  const materias = rawMaterias.map(m => calcularCalificacionFinalMateria(m));
+  const materias = rawMaterias.map(m => evaluarMateria(m));
 
-  const reprobadasCount = materias.filter(m => !m.aprobada).length;
-  const aprobadasCount = materias.filter(m => m.aprobada).length;
+  const materiasConCalif = materias.filter(m => m.tieneCalificacion);
+  const tieneAlgunaCalificacion = materiasConCalif.length > 0;
+  const reprobadasCount = materiasConCalif.filter(m => !m.aprobada).length;
+  const aprobadasCount = materiasConCalif.filter(m => m.aprobada).length;
 
-  let promedioGeneral = est.promedioGeneral;
-  if (materias.length > 0) {
+  let promedioGeneral = "0.00";
+  if (tieneAlgunaCalificacion) {
     const suma = materias.reduce((acc, m) => acc + parseFloat(m.final || 0), 0);
     promedioGeneral = (suma / materias.length).toFixed(2);
-  } else if (promedioGeneral === undefined || promedioGeneral === null || isNaN(parseFloat(promedioGeneral))) {
-    promedioGeneral = "0.00";
-  } else {
-    promedioGeneral = parseFloat(promedioGeneral).toFixed(2);
+  }
+
+  let estatusAlumno = "Pendiente";
+  if (tieneAlgunaCalificacion) {
+    estatusAlumno = reprobadasCount > 0 ? "Reprobado" : "Aprobado";
   }
 
   return {
@@ -140,8 +161,10 @@ function normalizarEstudiante(est, index = 0) {
     grupo,
     carrera,
     materias,
+    tieneAlgunaCalificacion,
     reprobadasCount,
     aprobadasCount,
+    estatusAlumno,
     promedioGeneral
   };
 }
@@ -213,7 +236,7 @@ app.get('/api/aspirantes', async (req, res) => {
 
 app.post('/api/aspirantes', async (req, res) => {
   try {
-    const { nombre, apellidoP, apellidoM, edad, municipio, carrera } = req.body;
+    const { nombre, apellidoP, apellidoM, edad, codigoPostal, municipio, calle, carrera } = req.body;
     if (!nombre || !apellidoP) {
       return res.status(400).json({ success: false, error: "El nombre y apellido paterno son obligatorios" });
     }
@@ -227,7 +250,9 @@ app.post('/api/aspirantes', async (req, res) => {
       apellidoP: apellidoP.trim(),
       apellidoM: (apellidoM || "").trim(),
       edad: Number(edad) || 18,
+      codigoPostal: String(codigoPostal || "").trim(),
       municipio: (municipio || "Tultitlán").trim(),
+      calle: (calle || "").trim(),
       carrera: carreraElegida,
       fechaRegistro: new Date()
     };
@@ -264,7 +289,9 @@ app.post('/api/convertir/:id', async (req, res) => {
       nombre: aspirante.nombre || "Sin Nombre",
       apellidos: `${aspirante.apellidoP || ''} ${aspirante.apellidoM || ''}`.trim() || "Sin Apellidos",
       edad: aspirante.edad || 18,
+      codigoPostal: aspirante.codigoPostal || "",
       municipio: aspirante.municipio || "N/A",
+      calle: aspirante.calle || "",
       carrera: carreraSeleccionada,
       grupo: grupoAsignado,
       materias: materiasAsignadas,
@@ -298,10 +325,11 @@ app.post('/api/actualizar-todo/:id', async (req, res) => {
       materiasBase = generarMateriasPorCarrera(carreraValida);
     }
 
-    const materiasFinales = materiasBase.map(m => calcularCalificacionFinalMateria(m));
+    const materiasFinales = materiasBase.map(m => evaluarMateria(m));
+    const tieneAlgunaCalificacion = materiasFinales.some(m => m.tieneCalificacion);
 
     let promedioGeneral = 0.0;
-    if (materiasFinales.length > 0) {
+    if (tieneAlgunaCalificacion && materiasFinales.length > 0) {
       const suma = materiasFinales.reduce((acc, m) => acc + parseFloat(m.final || 0), 0);
       promedioGeneral = parseFloat((suma / materiasFinales.length).toFixed(2));
     }
