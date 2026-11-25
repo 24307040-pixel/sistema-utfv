@@ -15,7 +15,7 @@
             --utfv-fondo: #f4f1ec;
         }
         body {
-            background: radial-gradient(circle at top, #fbf8f3 0%, var(--utfv-fondo) 100%);
+            background: radial-gradient(circle at top, #fcfaf6 0%, var(--utfv-fondo) 100%);
             color: #231f20;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             min-height: 100vh;
@@ -28,6 +28,10 @@
             border: 1px solid #e3d8c6;
             border-radius: 16px;
             overflow: hidden;
+            transition: transform 0.18s ease, box-shadow 0.18s ease;
+        }
+        .card-utfv:hover {
+            box-shadow: 0 10px 24px rgba(92, 35, 43, 0.1) !important;
         }
         .card-header-utfv {
             background: linear-gradient(90deg, var(--utfv-guinda) 0%, var(--utfv-vino) 100%);
@@ -47,11 +51,40 @@
             text-align: center;
             color: var(--utfv-guinda);
             font-weight: 800;
-            letter-spacing: 0.4px;
+            letter-spacing: 0.5px;
         }
         .subtitulo-seccion {
             text-align: center;
             color: #6c635b;
+        }
+        /* Nuevo estilo de líneas / rayas decorativas institucionales */
+        .divisor-utfv {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            max-width: 440px;
+            margin: 12px auto 0;
+        }
+        .divisor-utfv::before,
+        .divisor-utfv::after {
+            content: "";
+            flex: 1;
+            height: 2px;
+            border-radius: 999px;
+        }
+        .divisor-utfv::before {
+            background: linear-gradient(90deg, transparent, var(--utfv-dorado));
+        }
+        .divisor-utfv::after {
+            background: linear-gradient(90deg, var(--utfv-dorado), transparent);
+        }
+        .divisor-rombo {
+            width: 9px;
+            height: 9px;
+            background-color: var(--utfv-vino);
+            transform: rotate(45deg);
+            border: 1px solid var(--utfv-dorado);
         }
         .btn-utfv {
             background-color: var(--utfv-vino);
@@ -80,7 +113,7 @@
             font-weight: 600;
         }
         .logo-utfv {
-            max-height: 90px;
+            max-height: 92px;
             width: auto;
             object-fit: contain;
         }
@@ -93,8 +126,8 @@
         }
         .kpi-card {
             border-top: 4px solid var(--utfv-vino);
-            border-bottom: 2px solid var(--utfv-dorado);
-            border-radius: 12px;
+            border-bottom: 3px solid var(--utfv-dorado);
+            border-radius: 14px;
             text-align: center;
         }
         @media (max-width: 576px) {
@@ -125,7 +158,10 @@
         <div class="text-center mb-5">
             <img src="/logo-utfv.jpg" alt="Universidad Tecnológica Fidel Velázquez" class="logo-utfv mb-2" onerror="this.style.display='none'">
             <h3 class="titulo-seccion mb-1">UNIVERSIDAD TECNOLÓGICA FIDEL VELÁZQUEZ</h3>
-            <p class="subtitulo-seccion mb-0">Sistema Integral de Gestión Académica y Consulta de Boletas · Mínimo aprobatorio: 6.0</p>
+            <p class="subtitulo-seccion mb-0">Sistema Integral de Gestión Académica y Consulta de Boletas</p>
+            <div class="divisor-utfv">
+                <span class="divisor-rombo"></span>
+            </div>
         </div>
 
         <div class="row g-4 justify-content-center align-items-stretch">
@@ -183,7 +219,10 @@
     <div id="vistaAdmin" class="container my-4 d-none">
         <div class="text-center mb-4">
             <h4 class="titulo-seccion mb-1">PANEL DE CONTROL ESCOLAR</h4>
-            <p class="subtitulo-seccion small mb-0">Administración de aspirantes, grupos, calificaciones y evaluaciones EGO</p>
+            <p class="subtitulo-seccion small mb-0">Administración de aspirantes, grupos, calificaciones (0 - 10) y evaluaciones EGO</p>
+            <div class="divisor-utfv">
+                <span class="divisor-rombo"></span>
+            </div>
         </div>
 
         <div class="row g-3 mb-4">
@@ -223,6 +262,11 @@
                 </div>
             </div>
             <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-12 col-md-6 mx-auto">
+                        <input type="text" id="buscadorAspirantes" class="form-control form-control-sm text-center" placeholder="🔍 Filtrar aspirante por nombre, municipio o carrera..." oninput="renderizarAspirantes()">
+                    </div>
+                </div>
                 <div class="table-responsive">
                     <table class="table table-hover align-middle text-center">
                         <thead class="table-light">
@@ -230,7 +274,7 @@
                                 <th>Nombre</th>
                                 <th>Apellidos</th>
                                 <th>Edad</th>
-                                <th>Municipio</th>
+                                <th>CP / Municipio / Calle</th>
                                 <th>Carrera</th>
                                 <th>Acción</th>
                             </tr>
@@ -299,7 +343,10 @@
     <div id="vistaAlumno" class="container my-4 d-none">
         <div class="text-center mb-3">
             <h4 class="titulo-seccion mb-1">BOLETA DE CALIFICACIONES DEL ALUMNO</h4>
-            <p class="subtitulo-seccion small mb-0">Calificación mínima aprobatoria: 6.0 · Incluye evaluación EGO</p>
+            <p class="subtitulo-seccion small mb-0">Calificación mínima aprobatoria: 6.0 · Escala de 0.0 a 10.0 · Incluye evaluación EGO</p>
+            <div class="divisor-utfv">
+                <span class="divisor-rombo"></span>
+            </div>
         </div>
         <div class="card card-utfv shadow-sm">
             <div class="card-header card-header-utfv py-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
@@ -312,7 +359,7 @@
 
     <!-- MODAL AGREGAR ASPIRANTE -->
     <div class="modal fade" id="modalAgregarAspirante" tabindex="-1">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header navbar-utfv text-white">
                     <h5 class="modal-title w-100 text-center">➕ Registrar Nuevo Aspirante</h5>
@@ -335,14 +382,23 @@
                             </div>
                         </div>
                         <div class="row g-2 mb-3">
-                            <div class="col-5">
+                            <div class="col-12 col-sm-3">
                                 <label class="form-label fw-bold small">Edad</label>
                                 <input type="number" id="aspEdad" class="form-control" min="15" max="99" value="18" required>
                             </div>
-                            <div class="col-7">
-                                <label class="form-label fw-bold small">Municipio</label>
-                                <input type="text" id="aspMunicipio" class="form-control" placeholder="Ej. Tultitlán" required>
+                            <div class="col-12 col-sm-4">
+                                <label class="form-label fw-bold small">Código Postal (CP)</label>
+                                <input type="text" id="aspCP" class="form-control" maxlength="5" pattern="[0-9]{5}" placeholder="Ej. 54900" oninput="buscarMunicipioPorCP()">
+                                <small class="text-muted" id="estadoCP"></small>
                             </div>
+                            <div class="col-12 col-sm-5">
+                                <label class="form-label fw-bold small">Municipio</label>
+                                <input type="text" id="aspMunicipio" class="form-control" placeholder="Se autocompleta con CP" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">Calle</label>
+                            <input type="text" id="aspCalle" class="form-control" placeholder="Ej. Av. Independencia #12" required>
                         </div>
                         <div class="mb-2">
                             <label class="form-label fw-bold small">Carrera de Interés</label>
@@ -423,8 +479,32 @@
             }
         };
 
+        // Catálogo rápido de respaldo para CPs frecuentes en la zona de la UTFV y CDMX
+        const CP_RESPALDO = {
+            "54900": "Tultitlán",
+            "54910": "Tultitlán",
+            "54913": "Tultitlán",
+            "54915": "Tultitlán",
+            "54920": "Tultitlán",
+            "54930": "Tultitlán",
+            "54940": "Tultitlán",
+            "54945": "Tultitlán",
+            "54948": "Tultitlán",
+            "55700": "Coacalco de Berriozábal",
+            "55710": "Coacalco de Berriozábal",
+            "55717": "Coacalco de Berriozábal",
+            "54700": "Cuautitlán Izcalli",
+            "54730": "Cuautitlán Izcalli",
+            "54800": "Cuautitlán",
+            "54000": "Tlalnepantla de Baz",
+            "54030": "Tlalnepantla de Baz",
+            "55000": "Ecatepec de Morelos",
+            "55100": "Ecatepec de Morelos"
+        };
+
         let alumnoSeleccionadoId = null;
         let listaEstudiantesGlobal = [];
+        let listaAspirantesGlobal = [];
         let alumnoActualSesion = null;
         let materiasBorradorModal = [];
 
@@ -432,13 +512,39 @@
             actualizarFiltroGrupos();
         });
 
-        function calcularFinalVisual(p1, p2, p3, egoRaw) {
-            const n1 = parseFloat(p1) || 0;
-            const n2 = parseFloat(p2) || 0;
-            const n3 = parseFloat(p3) || 0;
+        function clampCalifInput(inputEl, permitirVacio = false) {
+            let raw = inputEl.value;
+            if (raw === "") {
+                return permitirVacio ? "" : 0;
+            }
+            let num = parseFloat(raw);
+            if (isNaN(num)) {
+                inputEl.value = permitirVacio ? "" : "0";
+                return permitirVacio ? "" : 0;
+            }
+            if (num < 0) num = 0;
+            if (num > 10) num = 10;
+            // Limita a máximo 1 decimal para que no escriban calificaciones fuera de formato
+            const ajustado = parseFloat(num.toFixed(1));
+            if (String(ajustado) !== raw && !raw.endsWith(".")) {
+                inputEl.value = ajustado;
+            }
+            return ajustado;
+        }
+
+        function calcularFinalVisual(p1Raw, p2Raw, p3Raw, egoRaw) {
+            const n1 = Math.min(10, Math.max(0, parseFloat(p1Raw) || 0));
+            const n2 = Math.min(10, Math.max(0, parseFloat(p2) || 0));
+            const n3 = Math.min(10, Math.max(0, parseFloat(p3) || 0));
+
+            const tieneCalif = (String(p1Raw) !== "" && n1 > 0) ||
+                (String(p2Raw) !== "" && n2 > 0) ||
+                (String(p3Raw) !== "" && n3 > 0) ||
+                (String(egoRaw) !== "" && (parseFloat(egoRaw) || 0) > 0);
+
             const ord = parseFloat(((n1 + n2 + n3) / 3).toFixed(1));
             const tieneEgo = egoRaw !== "" && egoRaw !== null && egoRaw !== undefined;
-            const egoNum = tieneEgo ? (parseFloat(egoRaw) || 0) : null;
+            const egoNum = tieneEgo ? Math.min(10, Math.max(0, parseFloat(egoRaw) || 0)) : null;
 
             const final = (egoNum !== null && egoNum > 0)
                 ? parseFloat(egoNum.toFixed(1))
@@ -446,12 +552,15 @@
 
             return {
                 final,
-                aprobada: final >= 6.0,
-                estatus: final >= 6.0 ? "Aprobada" : "Reprobada"
+                tieneCalif: tieneCalif || final > 0,
+                aprobada: final >= 6.0
             };
         }
 
-        function badgePromedio(prom) {
+        function badgePromedio(prom, tieneCalif = true) {
+            if (!tieneCalif) {
+                return `<span class="badge bg-secondary fs-6">Sin calificar</span>`;
+            }
             const val = parseFloat(prom || 0);
             if (val >= 6.0) {
                 return `<span class="badge bg-success fs-6">${val.toFixed(2)}</span>`;
@@ -459,12 +568,65 @@
             return `<span class="badge bg-danger fs-6">${val.toFixed(2)}</span>`;
         }
 
-        function badgeEstatus(calif) {
+        function badgeEstatusMateria(calif, tieneCalif = true) {
+            if (!tieneCalif) {
+                return `<span class="badge bg-secondary-subtle text-secondary border border-secondary">Pendiente</span>`;
+            }
             const val = parseFloat(calif || 0);
             if (val >= 6.0) {
                 return `<span class="badge bg-success-subtle text-success border border-success">Aprobada</span>`;
             }
             return `<span class="badge bg-danger-subtle text-danger border border-danger">Reprobada</span>`;
+        }
+
+        function badgeEstatusAlumno(est) {
+            if (!est.tieneAlgunaCalificacion) {
+                return `<span class="badge bg-secondary">Sin calificaciones</span>`;
+            }
+            if ((est.reprobadasCount || 0) > 0) {
+                return `<span class="badge bg-danger">Reprobado (${est.reprobadasCount})</span>`;
+            }
+            return `<span class="badge bg-success">Aprobado</span>`;
+        }
+
+        async function buscarMunicipioPorCP() {
+            const inputCP = document.getElementById('aspCP');
+            const inputMun = document.getElementById('aspMunicipio');
+            const estadoEl = document.getElementById('estadoCP');
+
+            const cp = inputCP.value.replace(/\D/g, '').slice(0, 5);
+            inputCP.value = cp;
+
+            if (cp.length < 5) {
+                estadoEl.innerText = "";
+                return;
+            }
+
+            if (CP_RESPALDO[cp]) {
+                inputMun.value = CP_RESPALDO[cp];
+                estadoEl.innerText = "Municipio detectado por CP";
+                return;
+            }
+
+            estadoEl.innerText = "Buscando municipio...";
+            try {
+                const res = await fetch(`https://api.zippopotam.us/mx/${cp}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    const lugar = data.places && data.places[0];
+                    if (lugar) {
+                        const municipioDetectado = lugar.state || lugar['place name'] || "";
+                        if (municipioDetectado) {
+                            inputMun.value = municipioDetectado;
+                            estadoEl.innerText = "Municipio autocompletado";
+                            return;
+                        }
+                    }
+                }
+                estadoEl.innerText = "Escribe el municipio manualmente";
+            } catch (e) {
+                estadoEl.innerText = "Escribe el municipio manualmente";
+            }
         }
 
         function mostrarBarraNav(textoUsuario, esAdmin = false) {
@@ -572,8 +734,10 @@
 
             (est.materias || []).forEach(m => {
                 const finalNum = parseFloat(m.final ?? 0);
-                if (finalNum < 6.0) reprobadas++;
-                const egoTexto = (m.ego !== null && m.ego !== undefined && String(m.ego) !== "")
+                const tieneCalif = Boolean(m.tieneCalificacion) || finalNum > 0;
+                if (tieneCalif && finalNum < 6.0) reprobadas++;
+
+                const egoTexto = (m.ego !== null && m.ego !== undefined && String(m.ego) !== "" && Number(m.ego) > 0)
                     ? Number(m.ego).toFixed(1)
                     : "—";
 
@@ -586,8 +750,8 @@
                         <td>${m.p2 ?? 0}</td>
                         <td>${m.p3 ?? 0}</td>
                         <td><span class="badge badge-utfv">${egoTexto}</span></td>
-                        <td><strong>${finalNum.toFixed(1)}</strong></td>
-                        <td>${badgeEstatus(finalNum)}</td>
+                        <td><strong>${tieneCalif ? finalNum.toFixed(1) : "—"}</strong></td>
+                        <td>${badgeEstatusMateria(finalNum, tieneCalif)}</td>
                     </tr>
                 `;
             });
@@ -603,7 +767,7 @@
                         <p class="mb-1 small"><strong>Carrera:</strong> ${est.carrera}</p>
                         <p class="mb-1 small"><strong>Grupo:</strong> <span class="badge badge-utfv">${est.grupo}</span></p>
                         <p class="mb-1 small"><strong>Materias Reprobadas (&lt; 6):</strong> <span class="badge ${reprobadas > 0 ? 'bg-danger' : 'bg-success'}">${reprobadas}</span></p>
-                        <p class="mb-0 small"><strong>Promedio Final:</strong> ${badgePromedio(est.promedioGeneral)}</p>
+                        <p class="mb-0 small"><strong>Promedio Final:</strong> ${badgePromedio(est.promedioGeneral, est.tieneAlgunaCalificacion)}</p>
                     </div>
                 </div>
                 <div class="table-responsive">
@@ -634,7 +798,9 @@
                 apellidoP: document.getElementById('aspApellidoP').value.trim(),
                 apellidoM: document.getElementById('aspApellidoM').value.trim(),
                 edad: document.getElementById('aspEdad').value,
+                codigoPostal: document.getElementById('aspCP').value.trim(),
                 municipio: document.getElementById('aspMunicipio').value.trim(),
+                calle: document.getElementById('aspCalle').value.trim(),
                 carrera: document.getElementById('aspCarrera').value
             };
 
@@ -648,6 +814,7 @@
                 if (data.success) {
                     alert("¡Aspirante registrado correctamente!");
                     e.target.reset();
+                    document.getElementById('estadoCP').innerText = "";
                     bootstrap.Modal.getInstance(document.getElementById('modalAgregarAspirante')).hide();
                     cargarAspirantes();
                 } else {
@@ -661,34 +828,50 @@
         async function cargarAspirantes() {
             try {
                 const res = await fetch('/api/aspirantes');
-                const aspirantes = await res.json();
-                document.getElementById('kpiAspirantes').innerText = aspirantes.length;
-
-                const tbody = document.getElementById('tablaAspirantes');
-                tbody.innerHTML = '';
-
-                if (!aspirantes.length) {
-                    tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted">No hay aspirantes pendientes por inscribir.</td></tr>`;
-                    return;
-                }
-
-                aspirantes.forEach(asp => {
-                    tbody.innerHTML += `
-                        <tr>
-                            <td>${asp.nombre || 'N/A'}</td>
-                            <td>${asp.apellidoP || asp.apellidos || ''} ${asp.apellidoM || ''}</td>
-                            <td>${asp.edad || 'N/A'}</td>
-                            <td>${asp.municipio || 'N/A'}</td>
-                            <td class="small">${asp.carrera || 'Licenciatura en Ingeniería en Tecnologías de la Información e Innovación Digital'}</td>
-                            <td>
-                                <button class="btn btn-utfv btn-sm" onclick="convertirEstudiante('${asp._id}')">Inscribir</button>
-                            </td>
-                        </tr>
-                    `;
-                });
+                listaAspirantesGlobal = await res.json();
+                document.getElementById('kpiAspirantes').innerText = listaAspirantesGlobal.length;
+                renderizarAspirantes();
             } catch (e) {
                 console.error("Error al cargar aspirantes:", e);
             }
+        }
+
+        function renderizarAspirantes() {
+            const filtro = (document.getElementById('buscadorAspirantes')?.value || "").toLowerCase().trim();
+            const tbody = document.getElementById('tablaAspirantes');
+            tbody.innerHTML = '';
+
+            const filtrados = listaAspirantesGlobal.filter(asp => {
+                if (!filtro) return true;
+                const texto = `${asp.nombre || ''} ${asp.apellidoP || ''} ${asp.apellidoM || ''} ${asp.municipio || ''} ${asp.carrera || ''}`.toLowerCase();
+                return texto.includes(filtro);
+            });
+
+            if (!filtrados.length) {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted">No hay aspirantes pendientes por inscribir.</td></tr>`;
+                return;
+            }
+
+            filtrados.forEach(asp => {
+                const ubicacion = [
+                    asp.codigoPostal ? `CP ${asp.codigoPostal}` : "",
+                    asp.municipio || "",
+                    asp.calle ? `Calle: ${asp.calle}` : ""
+                ].filter(Boolean).join(" · ") || "N/A";
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${asp.nombre || 'N/A'}</td>
+                        <td>${asp.apellidoP || asp.apellidos || ''} ${asp.apellidoM || ''}</td>
+                        <td>${asp.edad || 'N/A'}</td>
+                        <td class="small">${ubicacion}</td>
+                        <td class="small">${asp.carrera || 'Licenciatura en Ingeniería en Tecnologías de la Información e Innovación Digital'}</td>
+                        <td>
+                            <button class="btn btn-utfv btn-sm" onclick="convertirEstudiante('${asp._id}')">Inscribir</button>
+                        </td>
+                    </tr>
+                `;
+            });
         }
 
         async function convertirEstudiante(id) {
@@ -713,9 +896,10 @@
                 listaEstudiantesGlobal = await res.json();
                 document.getElementById('kpiEstudiantes').innerText = listaEstudiantesGlobal.length;
 
-                if (listaEstudiantesGlobal.length > 0) {
-                    const sumaProm = listaEstudiantesGlobal.reduce((acc, e) => acc + parseFloat(e.promedioGeneral || 0), 0);
-                    document.getElementById('kpiPromedio').innerText = (sumaProm / listaEstudiantesGlobal.length).toFixed(2);
+                const calificados = listaEstudiantesGlobal.filter(e => e.tieneAlgunaCalificacion);
+                if (calificados.length > 0) {
+                    const sumaProm = calificados.reduce((acc, e) => acc + parseFloat(e.promedioGeneral || 0), 0);
+                    document.getElementById('kpiPromedio').innerText = (sumaProm / calificados.length).toFixed(2);
                 } else {
                     document.getElementById('kpiPromedio').innerText = "0.00";
                 }
@@ -766,12 +950,6 @@
 
             filtrados.forEach(est => {
                 const idUnico = est._id || est.matricula;
-                const promNum = parseFloat(est.promedioGeneral || 0);
-                const tieneReprobadas = (est.materias || []).some(m => parseFloat(m.final || 0) < 6.0);
-                const estatusGlobal = (promNum >= 6.0 && !tieneReprobadas)
-                    ? `<span class="badge bg-success">Aprobado</span>`
-                    : `<span class="badge bg-danger">Reprobado</span>`;
-
                 tbody.innerHTML += `
                     <tr>
                         <td><strong>${est.matricula}</strong></td>
@@ -779,8 +957,8 @@
                         <td>${est.nombre} ${est.apellidos}</td>
                         <td class="small">${est.carrera}</td>
                         <td><span class="badge badge-utfv">${est.grupo}</span></td>
-                        <td>${badgePromedio(est.promedioGeneral)}</td>
-                        <td>${estatusGlobal}</td>
+                        <td>${badgePromedio(est.promedioGeneral, est.tieneAlgunaCalificacion)}</td>
+                        <td>${badgeEstatusAlumno(est)}</td>
                         <td>
                             <button class="btn btn-outline-dark btn-sm" onclick="verBoleta('${idUnico}')">⚙️ Gestionar</button>
                         </td>
@@ -829,7 +1007,7 @@
                     </div>
                 </div>
                 <div class="alert py-2 small text-center" style="background: var(--utfv-dorado-claro); border-color: var(--utfv-dorado);">
-                    Calificación mínima aprobatoria: <strong>6.0</strong>. Si ingresas calificación en <strong>EGO</strong>, se carga automáticamente como calificación <strong>Final</strong> al concluir el EGO.
+                    Escala estricta de <strong>0.0 a 10.0</strong> · Mínimo aprobatorio: <strong>6.0</strong>. Si ingresas calificación en <strong>EGO</strong>, se carga automáticamente como calificación <strong>Final</strong> al concluir el EGO.
                 </div>
                 <div id="contenedorTablaMateriasModal"></div>
             `;
@@ -853,7 +1031,8 @@
                 p2: 0,
                 p3: 0,
                 ego: null,
-                final: 0
+                final: 0,
+                tieneCalificacion: false
             }));
             renderizarTablaMateriasModal();
         }
@@ -867,10 +1046,10 @@
                                 <th>Clave</th>
                                 <th>Materia</th>
                                 <th>Profesor</th>
-                                <th>P1</th>
-                                <th>P2</th>
-                                <th>P3</th>
-                                <th>EGO</th>
+                                <th>P1 (0-10)</th>
+                                <th>P2 (0-10)</th>
+                                <th>P3 (0-10)</th>
+                                <th>EGO (0-10)</th>
                                 <th>Final</th>
                                 <th>Estado</th>
                             </tr>
@@ -879,19 +1058,19 @@
             `;
 
             materiasBorradorModal.forEach((mat, idx) => {
-                const egoValor = (mat.ego !== null && mat.ego !== undefined && String(mat.ego) !== "") ? mat.ego : "";
+                const egoValor = (mat.ego !== null && mat.ego !== undefined && String(mat.ego) !== "" && Number(mat.ego) > 0) ? mat.ego : "";
                 const calc = calcularFinalVisual(mat.p1 ?? 0, mat.p2 ?? 0, mat.p3 ?? 0, egoValor);
                 html += `
                     <tr>
                         <td><input type="text" class="form-control form-control-sm text-center" id="materia-clave-${idx}" value="${mat.clave || ''}" style="width: 82px;"></td>
                         <td><input type="text" class="form-control form-control-sm" id="materia-nombre-${idx}" value="${mat.nombre || ''}"></td>
                         <td><input type="text" class="form-control form-control-sm" id="materia-profesor-${idx}" value="${mat.profesor || ''}"></td>
-                        <td><input type="number" step="0.1" min="0" max="10" class="form-control form-control-sm text-center input-calif" data-index="${idx}" data-tipo="p1" value="${mat.p1 ?? 0}" oninput="recalcularFila(${idx})" style="width: 68px;"></td>
-                        <td><input type="number" step="0.1" min="0" max="10" class="form-control form-control-sm text-center input-calif" data-index="${idx}" data-tipo="p2" value="${mat.p2 ?? 0}" oninput="recalcularFila(${idx})" style="width: 68px;"></td>
-                        <td><input type="number" step="0.1" min="0" max="10" class="form-control form-control-sm text-center input-calif" data-index="${idx}" data-tipo="p3" value="${mat.p3 ?? 0}" oninput="recalcularFila(${idx})" style="width: 68px;"></td>
-                        <td><input type="number" step="0.1" min="0" max="10" placeholder="EGO" class="form-control form-control-sm text-center input-ego" data-index="${idx}" value="${egoValor}" oninput="recalcularFila(${idx})" style="width: 72px;"></td>
-                        <td><strong id="final-${idx}">${calc.final.toFixed(1)}</strong></td>
-                        <td id="estado-fila-${idx}">${badgeEstatus(calc.final)}</td>
+                        <td><input type="number" step="0.1" min="0" max="10" class="form-control form-control-sm text-center input-calif" data-index="${idx}" data-tipo="p1" value="${mat.p1 ?? 0}" oninput="recalcularFila(${idx})" onblur="recalcularFila(${idx})" style="width: 72px;"></td>
+                        <td><input type="number" step="0.1" min="0" max="10" class="form-control form-control-sm text-center input-calif" data-index="${idx}" data-tipo="p2" value="${mat.p2 ?? 0}" oninput="recalcularFila(${idx})" onblur="recalcularFila(${idx})" style="width: 72px;"></td>
+                        <td><input type="number" step="0.1" min="0" max="10" class="form-control form-control-sm text-center input-calif" data-index="${idx}" data-tipo="p3" value="${mat.p3 ?? 0}" oninput="recalcularFila(${idx})" onblur="recalcularFila(${idx})" style="width: 72px;"></td>
+                        <td><input type="number" step="0.1" min="0" max="10" placeholder="EGO" class="form-control form-control-sm text-center input-ego" data-index="${idx}" value="${egoValor}" oninput="recalcularFila(${idx})" onblur="recalcularFila(${idx})" style="width: 76px;"></td>
+                        <td><strong id="final-${idx}">${calc.tieneCalif ? calc.final.toFixed(1) : "—"}</strong></td>
+                        <td id="estado-fila-${idx}">${badgeEstatusMateria(calc.final, calc.tieneCalif)}</td>
                     </tr>
                 `;
             });
@@ -901,14 +1080,19 @@
         }
 
         function recalcularFila(idx) {
-            const p1 = parseFloat(document.querySelector(`input[data-index="${idx}"].input-calif[data-tipo="p1"]`).value) || 0;
-            const p2 = parseFloat(document.querySelector(`input[data-index="${idx}"].input-calif[data-tipo="p2"]`).value) || 0;
-            const p3 = parseFloat(document.querySelector(`input[data-index="${idx}"].input-calif[data-tipo="p3"]`).value) || 0;
-            const egoRaw = document.querySelector(`input[data-index="${idx}"].input-ego`).value;
+            const elP1 = document.querySelector(`input[data-index="${idx}"].input-calif[data-tipo="p1"]`);
+            const elP2 = document.querySelector(`input[data-index="${idx}"].input-calif[data-tipo="p2"]`);
+            const elP3 = document.querySelector(`input[data-index="${idx}"].input-calif[data-tipo="p3"]`);
+            const elEgo = document.querySelector(`input[data-index="${idx}"].input-ego`);
+
+            const p1 = clampCalifInput(elP1, false);
+            const p2 = clampCalifInput(elP2, false);
+            const p3 = clampCalifInput(elP3, false);
+            const egoRaw = clampCalifInput(elEgo, true);
 
             const calc = calcularFinalVisual(p1, p2, p3, egoRaw);
-            document.getElementById(`final-${idx}`).innerText = calc.final.toFixed(1);
-            document.getElementById(`estado-fila-${idx}`).innerHTML = badgeEstatus(calc.final);
+            document.getElementById(`final-${idx}`).innerText = calc.tieneCalif ? calc.final.toFixed(1) : "—";
+            document.getElementById(`estado-fila-${idx}`).innerHTML = badgeEstatusMateria(calc.final, calc.tieneCalif);
         }
 
         async function guardarTodosLosCambios() {
@@ -921,12 +1105,17 @@
                 const clave = document.getElementById(`materia-clave-${idx}`).value;
                 const nombre = document.getElementById(`materia-nombre-${idx}`).value;
                 const profesor = document.getElementById(`materia-profesor-${idx}`).value;
-                const p1 = parseFloat(document.querySelector(`input[data-index="${idx}"].input-calif[data-tipo="p1"]`).value) || 0;
-                const p2 = parseFloat(document.querySelector(`input[data-index="${idx}"].input-calif[data-tipo="p2"]`).value) || 0;
-                const p3 = parseFloat(document.querySelector(`input[data-index="${idx}"].input-calif[data-tipo="p3"]`).value) || 0;
-                const egoRaw = document.querySelector(`input[data-index="${idx}"].input-ego`).value;
-                const tieneEgo = egoRaw !== "" && egoRaw !== null && egoRaw !== undefined;
-                const ego = tieneEgo ? (parseFloat(egoRaw) || 0) : null;
+
+                const elP1 = document.querySelector(`input[data-index="${idx}"].input-calif[data-tipo="p1"]`);
+                const elP2 = document.querySelector(`input[data-index="${idx}"].input-calif[data-tipo="p2"]`);
+                const elP3 = document.querySelector(`input[data-index="${idx}"].input-calif[data-tipo="p3"]`);
+                const elEgo = document.querySelector(`input[data-index="${idx}"].input-ego`);
+
+                const p1 = clampCalifInput(elP1, false);
+                const p2 = clampCalifInput(elP2, false);
+                const p3 = clampCalifInput(elP3, false);
+                const egoRaw = clampCalifInput(elEgo, true);
+                const ego = (egoRaw !== "" && egoRaw !== null) ? egoRaw : null;
 
                 const calc = calcularFinalVisual(p1, p2, p3, egoRaw);
 
@@ -987,8 +1176,11 @@
             doc.text(`Matrícula: ${est.matricula}`, 14, y + 6);
             doc.text(`Correo: ${est.correo}`, 14, y + 12);
             doc.text(`Grupo: ${est.grupo}`, 135, y);
-            doc.text(`Promedio Final: ${est.promedioGeneral ?? 0}`, 135, y + 6);
+            doc.text(`Promedio Final: ${est.tieneAlgunaCalificacion ? (est.promedioGeneral ?? 0) : "Sin calif."}`, 135, y + 6);
             doc.text(`Carrera: ${est.carrera}`, 14, y + 18);
+            doc.setFontSize(8);
+            doc.text(`Emisión: ${new Date().toLocaleString("es-MX")}`, 135, y + 12);
+            doc.setFontSize(10);
 
             y = 67;
             doc.setFillColor(248, 243, 234);
@@ -1009,8 +1201,9 @@
 
             (est.materias || []).forEach(m => {
                 const finalNum = parseFloat(m.final ?? 0);
-                const estadoTxt = finalNum >= 6.0 ? "Aprob." : "Reprob.";
-                const egoTxt = (m.ego !== null && m.ego !== undefined && String(m.ego) !== "")
+                const tieneCalif = Boolean(m.tieneCalificacion) || finalNum > 0;
+                const estadoTxt = !tieneCalif ? "Pend." : (finalNum >= 6.0 ? "Aprob." : "Reprob.");
+                const egoTxt = (m.ego !== null && m.ego !== undefined && String(m.ego) !== "" && Number(m.ego) > 0)
                     ? String(m.ego)
                     : "-";
                 const matTxt = m.nombre.length > 30 ? m.nombre.substring(0, 27) + "..." : m.nombre;
@@ -1023,7 +1216,7 @@
                 doc.text(String(m.p3 ?? 0), 151, y);
                 doc.text(egoTxt, 160, y);
                 doc.setFont("helvetica", "bold");
-                doc.text(finalNum.toFixed(1), 170, y);
+                doc.text(tieneCalif ? finalNum.toFixed(1) : "-", 170, y);
                 doc.text(estadoTxt, 181, y);
                 doc.setFont("helvetica", "normal");
                 y += 8;
